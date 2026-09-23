@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Base de datos relacional
+  database:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: english_pucv_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Backend principal (NestJS)
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: nestjs_backend
+    restart: always
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://admin:adminpassword@database:5432/english_pucv_db
+      PYTHON_SERVICE_URL: http://python-service:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+
+  # Microservicio especializado (Python / FastAPI)
+  python-service:
+    build:
+      context: ./Microservicio
+      dockerfile: Dockerfile
+    container_name: python_microservice
+    restart: always
+    environment:
+      PORT: 8000
+    ports:
+      - "8000:8000"
+
+  # Frontend (Angular + Ionic)
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: angular_frontend
+    restart: always
+    ports:
+      - "8100:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
