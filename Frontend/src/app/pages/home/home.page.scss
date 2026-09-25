@@ -1,0 +1,214 @@
+/* Barra superior morada garantizada */
+.miracle-navbar {
+  background-color: #7900ba;
+  color: #ffffff;
+  min-height: 60px;
+  padding: 8px 24px 8px 20px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Logo y texto izquierdo del navbar */
+.brand-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.nav-logo-wrapper {
+  width: 44px;
+  height: 40px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  box-sizing: border-box;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-title {
+  color: #ffffff;
+  font-family: 'Times New Roman', Georgia, serif;
+  font-size: 25px;
+  letter-spacing: 2px;
+  font-weight: 400;
+}
+
+/* Botón Mi Cuenta a la derecha */
+.account-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.account-icon {
+  font-size: 34px;
+  color: #ffffff;
+}
+
+.account-text {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.chevron-icon {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+/* Fondo gris claro general */
+.miracle-bg {
+  --background: #ededed;
+  background-color: #ededed;
+  display: block;
+  min-height: calc(100vh - 60px);
+}
+
+.main-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 46px 20px;
+  min-height: calc(100vh - 60px);
+  background-color: #ededed;
+  box-sizing: border-box;
+}
+
+/* Tarjeta blanca central */
+.welcome-card {
+  width: 100%;
+  max-width: 920px;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 38px 24px 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* Recuadro lila del logo central */
+.card-logo-outer {
+  width: 58px;
+  height: 58px;
+  background-color: #c68ee6;
+  border-radius: 14px;
+  padding: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+  box-sizing: border-box;
+}
+
+.card-logo-inner {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+/* Título grande MIRACLE */
+.main-title {
+  font-family: 'Times New Roman', Georgia, serif;
+  font-size: 68px;
+  font-weight: 400;
+  color: #7900ba;
+  letter-spacing: 3px;
+  margin: 0 0 18px 0;
+  line-height: 1;
+}
+
+/* Subtítulo */
+.subtitle {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #4a4a4a;
+  margin: 0 0 26px 0;
+}
+
+/* Fila de botones */
+.buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Botón Iniciar sesión */
+.btn-login {
+  background-color: #7900ba;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  width: 154px;
+  height: 44px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-login:hover {
+  background-color: #630099;
+}
+
+/* Botón Registrarse */
+.btn-register {
+  background-color: #b266d9;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  width: 154px;
+  height: 44px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-register:hover {
+  background-color: #9e50c7;
+}
