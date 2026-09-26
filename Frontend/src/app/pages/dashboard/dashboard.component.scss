@@ -1,0 +1,84 @@
+/* --- NAVBAR Y ESTRUCTURA --- */
+.miracle-navbar { background-color: #7900ba; color: #ffffff; min-height: 60px; padding: 8px 24px 8px 20px; display: flex; align-items: center; width: 100%; box-sizing: border-box; }
+.navbar-container { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+
+.back-box { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #ffffff; font-family: system-ui, sans-serif; font-size: 14px; }
+.back-icon { font-size: 18px; }
+
+.brand-box { display: flex; align-items: center; gap: 14px; cursor: pointer; text-decoration: none; }
+.nav-logo-wrapper { width: 44px; height: 40px; background-color: #ffffff; border-radius: 4px; display: flex; align-items: center; justify-content: center; padding: 3px; box-sizing: border-box; }
+.logo-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.brand-title { color: #ffffff; font-family: 'Times New Roman', Georgia, serif; font-size: 25px; letter-spacing: 2px; font-weight: 400; }
+
+.account-box { display: flex; align-items: center; gap: 8px; color: #ffffff; cursor: pointer; }
+.account-icon { font-size: 34px; color: #ffffff; }
+.account-text { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: 500; color: #ffffff; }
+.chevron-icon { font-size: 14px; color: #ffffff; }
+
+.miracle-bg { --background: #ededed; background-color: #ededed; }
+.main-wrapper { display: flex; justify-content: center; align-items: flex-start; padding: 36px 40px; min-height: calc(100vh - 60px); box-sizing: border-box; }
+
+/* --- CONTENEDOR Y TÍTULO --- */
+.dashboard-container { width: 100%; max-width: 1000px; box-sizing: border-box; }
+.main-title { font-family: 'Times New Roman', Georgia, serif; font-size: 38px; color: #7900ba; margin: 0 0 24px 0; font-weight: 400; }
+
+/* --- TARJETAS DE CURSOS --- */
+.course-card {
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 140px;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.course-title {
+  font-family: 'Times New Roman', Georgia, serif;
+  font-size: 32px;
+  color: #7900ba;
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+.course-desc {
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  color: #4a4a4a;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* --- BOTÓN ENTRAR --- */
+.btn-enter {
+  background-color: #7900ba;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 24px;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-enter:hover {
+  background-color: #630099;
+}
+
+@media (max-width: 768px) {
+  .main-wrapper { padding: 20px 16px; }
+}

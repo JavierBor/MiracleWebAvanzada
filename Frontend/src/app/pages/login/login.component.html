@@ -1,0 +1,55 @@
+<ion-header class="ion-no-border">
+  <div class="miracle-navbar">
+    <div class="navbar-container">
+      <div class="brand-box" routerLink="/">
+        <div class="nav-logo-wrapper">
+          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
+        </div>
+        <span class="brand-title">MIRACLE</span>
+      </div>
+      <div class="account-box">
+        <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
+        <span class="account-text">Mi Cuenta</span>
+        <ion-icon name="chevron-down-outline" class="chevron-icon"></ion-icon>
+      </div>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="miracle-bg">
+  <div class="main-wrapper">
+    
+    <div class="login-card">
+      <!-- Botón Volver -->
+      <div class="back-container">
+        <a routerLink="/" class="back-link">
+          <ion-icon name="arrow-back-outline"></ion-icon> Volver al inicio
+        </a>
+      </div>
+
+      <div class="form-header">
+        <h1 class="form-title">Iniciar sesión</h1>
+        <p class="form-subtitle">Ingresa tus datos para continuar con tu aprendizaje.</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="iniciarSesion()" class="full-width-form">
+        <div class="field-container">
+          <label>Correo electrónico</label>
+          <ion-input fill="outline" mode="md" placeholder="nombre@ejemplo.com" formControlName="correo" type="email"></ion-input>
+        </div>
+
+        <div class="field-container">
+          <label>Contraseña</label>
+          <ion-input fill="outline" mode="md" placeholder="••••••••" type="password" formControlName="password"></ion-input>
+        </div>
+
+        <button type="submit" class="btn-submit">Iniciar sesión</button>
+
+        <div class="register-link">
+          ¿No tienes cuenta? <a routerLink="/register">Registrarse</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</ion-content>

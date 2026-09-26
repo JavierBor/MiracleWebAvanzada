@@ -1,0 +1,97 @@
+<ion-header class="ion-no-border">
+  <div class="miracle-navbar">
+    <div class="navbar-container">
+      
+      <!-- Botón Volver a la izquierda -->
+      <div class="back-box" routerLink="/">
+        <ion-icon name="home-outline" class="back-icon"></ion-icon>
+        <span class="back-text">Volver</span>
+      </div>
+
+      <!-- Logo y Título al centro -->
+      <div class="brand-box" routerLink="/">
+        <div class="nav-logo-wrapper">
+          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
+        </div>
+        <span class="brand-title">MIRACLE</span>
+      </div>
+
+      <!-- Mi Cuenta a la derecha -->
+      <div class="account-box">
+        <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
+        <span class="account-text">Mi Cuenta</span>
+        <ion-icon name="chevron-down-outline" class="chevron-icon"></ion-icon>
+      </div>
+
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="miracle-bg">
+  <div class="main-wrapper">
+    
+    <div class="dashboard-container">
+      <h1 class="main-title">Menú principal</h1>
+
+      <ion-grid class="ion-no-padding">
+        <ion-row>
+          <!-- Tarjeta ING-I -->
+          <ion-col size="12" size-md="6">
+            <div class="course-card">
+              <div class="card-top">
+                <h2 class="course-title">ING-I</h2>
+                <button class="btn-enter" routerLink="/juegos">Entrar</button>
+              </div>
+              <p class="course-desc">Accede a múltiples juegos para practicar.</p>
+            </div>
+          </ion-col>
+
+          <!-- Tarjeta ING-II -->
+          <ion-col size="12" size-md="6">
+            <div class="course-card">
+              <div class="card-top">
+                <h2 class="course-title">ING-II</h2>
+                <button class="btn-enter" routerLink="/curso-ii">Entrar</button>
+              </div>
+              <p class="course-desc">Accede a contenidos, actividades y recursos del curso.</p>
+            </div>
+          </ion-col>
+
+          <!-- Tarjeta ING-III -->
+          <ion-col size="12" size-md="6">
+            <div class="course-card">
+              <div class="card-top">
+                <h2 class="course-title">ING-III</h2>
+                <button class="btn-enter" routerLink="/curso-iii">Entrar</button>
+              </div>
+              <p class="course-desc">Accede a contenidos, actividades y recursos del curso.</p>
+            </div>
+          </ion-col>
+
+          <!-- Tarjeta ING-IV -->
+          <ion-col size="12" size-md="6">
+            <div class="course-card">
+              <div class="card-top">
+                <h2 class="course-title">ING-IV</h2>
+                <button class="btn-enter" routerLink="/curso-iv">Entrar</button>
+              </div>
+              <p class="course-desc">Accede a contenidos, actividades y recursos del curso.</p>
+            </div>
+          </ion-col>
+
+          <!-- Tarjeta Foro -->
+          <ion-col size="12" size-md="6">
+            <div class="course-card">
+              <div class="card-top">
+                <h2 class="course-title">Foro</h2>
+                <button class="btn-enter" routerLink="/foro">Entrar</button>
+              </div>
+              <p class="course-desc">Entrá para realizar comentarios, consultas y compartir dudas sobre la materia.</p>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+
+  </div>
+</ion-content>
