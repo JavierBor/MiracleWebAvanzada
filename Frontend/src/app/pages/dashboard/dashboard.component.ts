@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'; // 1. Importa OnInit
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
@@ -26,7 +26,7 @@ import { HeaderComponent } from '../../components/header/header.component';
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit { // 2. Implementa OnInit
   isAdminMode = false;
 
   cursos = [
@@ -67,6 +67,22 @@ export class DashboardComponent {
       arrowForwardOutline,
       sparklesOutline
     });
+  }
+
+  ngOnInit() {
+    // 3. Si recargas la página y el modo admin está activo, redirige automáticamente al menú admin
+    const savedAdmin = localStorage.getItem('miracle_admin_mode');
+    if (savedAdmin === 'true') {
+      this.router.navigate(['/admin']);
+    }
+  }
+
+  // 4. Captura el cambio cuando haces clic en "Modo Admin" desde el menú desplegable del header
+  onAdminModeChange(isAdmin: boolean) {
+    this.isAdminMode = isAdmin;
+    if (isAdmin) {
+      this.router.navigate(['/admin']);
+    }
   }
 
   irARuta(ruta: string) {

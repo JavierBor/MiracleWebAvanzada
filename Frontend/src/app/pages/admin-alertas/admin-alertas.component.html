@@ -1,0 +1,87 @@
+<ion-content class="admin-content">
+  <!-- Header con el botón para volver al menú de admin y control de modo admin -->
+  <app-header 
+    [showBack]="true" 
+    backRoute="/admin" 
+    backText="Volver" 
+    (adminModeChange)="handleAdminModeChange($event)">
+  </app-header>
+
+  <div class="admin-container">
+    
+    <!-- Tarjeta Principal del Formulario -->
+    <div class="alert-card">
+      <h1 class="page-title">Enviar Alertas/Avisos</h1>
+      <p class="page-subtitle">Envío de alertas por correo a usuarios individuales o masivos.</p>
+
+      <form (ngSubmit)="enviarAlerta()">
+        
+        <!-- Opciones: Enviar a (Radio buttons) -->
+        <div class="form-group">
+          <label class="form-label">Enviar a:</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="tipoEnvio" [(ngModel)]="tipoEnvio" value="todos" checked />
+              <span>Todos los usuarios</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="tipoEnvio" [(ngModel)]="tipoEnvio" value="individual" />
+              <span>Usuarios individuales</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Campo: Correos (Se deshabilita o cambia si es para todos, o se deja visible según mockup) -->
+        <div class="form-group">
+          <label class="form-label" for="correos">Correos</label>
+          <input 
+            type="text" 
+            id="correos" 
+            class="form-input" 
+            [(ngModel)]="correos" 
+            name="correos"
+            [disabled]="tipoEnvio === 'todos'"
+            [placeholder]="tipoEnvio === 'todos' ? 'Se enviará a toda la base de datos' : 'ejemplo@correo.com'" 
+          />
+        </div>
+
+        <!-- Campo: Asunto -->
+        <div class="form-group">
+          <label class="form-label" for="asunto">Asunto</label>
+          <input 
+            type="text" 
+            id="asunto" 
+            class="form-input" 
+            [(ngModel)]="asunto" 
+            name="asunto" 
+            placeholder="Escriba el asunto del mensaje" 
+            required 
+          />
+        </div>
+
+        <!-- Campo: Mensaje -->
+        <div class="form-group">
+          <label class="form-label" for="mensaje">Mensaje</label>
+          <textarea 
+            id="mensaje" 
+            class="form-textarea" 
+            [(ngModel)]="mensaje" 
+            name="mensaje" 
+            placeholder="Escriba el contenido del mensaje" 
+            rows="4"
+            required>
+          </textarea>
+        </div>
+
+        <!-- Botón de Enviar (Alineado a la derecha como en el mockup) -->
+        <div class="form-actions">
+          <button type="submit" class="submit-btn">
+            Enviar Alertas
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</ion-content>

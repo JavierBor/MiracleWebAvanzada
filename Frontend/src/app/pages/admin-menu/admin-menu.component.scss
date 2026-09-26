@@ -1,0 +1,106 @@
+.admin-content {
+  --background: #f4f5f8; // Fondo gris claro de la vista general
+}
+
+.admin-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.page-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 28px;
+  color: #6c00b8;
+  margin-bottom: 24px;
+  font-weight: bold;
+}
+
+// Estructura de la grilla de tarjetas
+.admin-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+// Tarjeta individual
+.admin-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e2e2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(108, 0, 184, 0.08);
+  }
+
+  &.full-width {
+    grid-column: 1 / -1; // Ocupa las dos columnas en pantallas grandes
+  }
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  h2 {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 20px;
+    color: #4a0072;
+    margin: 0;
+    font-weight: bold;
+  }
+}
+
+// Insignia/Badge en la esquina superior de cada tarjeta
+.card-badge {
+  background-color: #6c00b8;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: #666666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+// Botón de acción dentro de la tarjeta
+.action-btn {
+  width: 100%;
+  background-color: #6c00b8;
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(108, 0, 184, 0.2);
+
+  &:hover {
+    background-color: #52008a;
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+}

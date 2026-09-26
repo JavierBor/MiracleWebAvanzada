@@ -2,14 +2,23 @@
   <div class="miracle-navbar">
     <div class="navbar-container">
       
-      <!-- Izquierda: Botón Volver (o espacio si está oculto) -->
-      <div class="back-box" *ngIf="showBack" [routerLink]="backRoute">
-        <ion-icon name="home-outline" class="nav-icon"></ion-icon>
+      <!-- Izquierda: Botón Historial Anterior (Pestaña anterior) -->
+      <div class="back-box" *ngIf="showHistoryBack" (click)="goBack()">
+        <ion-icon name="arrow-back-outline" class="nav-icon"></ion-icon>
+        <span class="back-text">Anterior</span>
+      </div>
+
+      <!-- Izquierda: Botón Volver a Ruta Fija (si showHistoryBack es falso y showBack es verdadero) -->
+      <div class="back-box" *ngIf="!showHistoryBack && showBack" [routerLink]="backRoute">
+        <ion-icon name="arrow-back-outline" class="nav-icon"></ion-icon>
         <span class="back-text">{{ backText }}</span>
       </div>
 
-      <!-- Centro (o Izquierda si showBack es false): Logo + MIRACLE + Badge -->
-      <div class="brand-box" [routerLink]="showBack ? null : '/'" [style.cursor]="showBack ? 'default' : 'pointer'">
+      <!-- Espaciador si no hay ningún botón a la izquierda para mantener simetría -->
+      <div class="back-placeholder" *ngIf="!showHistoryBack && !showBack"></div>
+
+      <!-- Centro: Logo + MIRACLE + Badges -->
+      <div class="brand-box" [routerLink]="(showBack || showHistoryBack) ? null : '/'" [style.cursor]="(showBack || showHistoryBack) ? 'default' : 'pointer'">
         <div class="nav-logo-wrapper">
           <img src="logo.png" alt="Miracle Logo" class="logo-img" />
         </div>
@@ -20,7 +29,7 @@
 
       <!-- Derecha: Mi Cuenta con Dropdown -->
       <div class="account-wrapper">
-        <div class="account-box" (click)="toggleAccountMenu()">
+        <div class="account-box" (click)="toggleAccountMenu()" [class.active]="showAccountMenu">
           <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
           <span class="account-text">Mi Cuenta</span>
           <ion-icon name="chevron-down-outline" class="chevron-icon" [class.rotated]="showAccountMenu"></ion-icon>

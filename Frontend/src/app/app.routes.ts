@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
-
+import { AdminBaneoComponent } from './pages/admin-baneo/admin-baneo.component';
+import { AdminMenuComponent } from './pages/admin-menu/admin-menu.component';
+import { AdminAlertasComponent } from './pages/admin-alertas/admin-alertas.component';
 export const routes: Routes = [
   {
     path: '',
@@ -50,5 +52,13 @@ export const routes: Routes = [
     path: 'foro',
     loadComponent: () =>
       import('./pages/foro/foro.component').then((m) => m.ForoComponent),
-  }
+  },
+  
+  {
+      path: 'admin',
+      component: AdminMenuComponent
+    },
+  { path: 'admin/alertas', component: AdminAlertasComponent },
+  { path: 'admin/usuarios', component: AdminBaneoComponent },
+
 ];

@@ -1,48 +1,8 @@
 <ion-header class="ion-no-border">
-  <div class="miracle-navbar">
-    <div class="navbar-container">
-      
-      <!-- Izquierda: Volver al Menú -->
-      <div class="back-box" routerLink="/dashboard">
-        <ion-icon name="home-outline" class="nav-icon"></ion-icon>
-        <span class="back-text">Volver al Menú</span>
-      </div>
-
-      <!-- Centro: Logo + MIRACLE + ING-IV -->
-      <div class="brand-box">
-        <div class="nav-logo-wrapper">
-          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
-        </div>
-        <span class="brand-title">MIRACLE</span>
-        <span class="course-badge">ING-IV</span>
-        <span class="admin-badge" *ngIf="isAdminMode">ADMIN</span>
-      </div>
-
-      <!-- Derecha: Mi Cuenta con Dropdown -->
-      <div class="account-wrapper">
-        <div class="account-box" (click)="toggleAccountMenu()">
-          <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
-          <span class="account-text">Mi Cuenta</span>
-          <ion-icon name="chevron-down-outline" class="chevron-icon" [class.rotated]="showAccountMenu"></ion-icon>
-        </div>
-
-        <!-- Menú desplegable -->
-        <div class="dropdown-menu" *ngIf="showAccountMenu">
-          <button type="button" class="dropdown-item" (click)="toggleAdminMode()">
-            <ion-icon name="shield-checkmark-outline" class="dropdown-icon"></ion-icon>
-            <span>{{ isAdminMode ? 'Salir de Modo Admin' : 'Modo Admin' }}</span>
-          </button>
-          <div class="dropdown-divider"></div>
-          <button type="button" class="dropdown-item logout-item" (click)="cerrarSesion()">
-            <ion-icon name="log-out-outline" class="dropdown-icon"></ion-icon>
-            <span>Cerrar sesión</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
+  
+  <app-header [showHistoryBack]="true" badge="ING-4"></app-header>
 </ion-header>
+
 
 <ion-content class="miracle-bg">
   <div class="main-container">

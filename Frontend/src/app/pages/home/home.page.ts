@@ -24,7 +24,8 @@ import { HeaderComponent } from '../../components/header/header.component';
     IonToolbar,
     IonContent,
     IonButton,
-    IonIcon
+    IonIcon,
+    HeaderComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

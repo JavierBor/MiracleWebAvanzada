@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, Output, EventEmitter, OnInit, HostListener, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule, Location } from '@angular/common'; // <-- Importa Location
 import { Router, RouterLink } from '@angular/router';
 import { IonHeader, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   homeOutline,
+  arrowBackOutline,
   personCircleOutline,
   chevronDownOutline,
   shieldCheckmarkOutline,
@@ -25,21 +26,21 @@ import {
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class HeaderComponent implements OnInit {
-  // Propiedades configurables desde cada página
-  @Input() badge = ''; // Ej: 'ING-I', 'ING-II', 'FORO'
-  @Input() backText = 'Volver al Menú'; // Ej: 'Volver al Menú' o 'Volver'
-  @Input() backRoute = '/dashboard'; // Ruta al hacer clic en volver
-  @Input() showBack = true; // Si es false, oculta el botón de volver (útil en login/register/dashboard)
+  @Input() badge = ''; 
+  @Input() backText = 'Volver'; 
+  @Input() backRoute = '/dashboard'; 
+  @Input() showBack = true; 
+  @Input() showHistoryBack = false; // <-- NUEVO: Controla si se usa el botón de historial anterior
 
-  // Avisa a la página padre cuando cambia el Modo Admin
-  @Output() adminModeChange = new EventEmitter();
+  @Output() adminModeChange = new EventEmitter<boolean>();
 
   showAccountMenu = false;
   isAdminMode = false;
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private location: Location) { // <-- Inyecta Location
     addIcons({
       homeOutline,
+      arrowBackOutline,
       personCircleOutline,
       chevronDownOutline,
       shieldCheckmarkOutline,
@@ -48,12 +49,24 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Mantiene el estado de Modo Admin al navegar entre páginas
     const savedAdmin = localStorage.getItem('miracle_admin_mode');
     if (savedAdmin === 'true') {
       this.isAdminMode = true;
       this.adminModeChange.emit(true);
     }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.account-wrapper')) {
+      this.showAccountMenu = false;
+    }
+  }
+
+  // NUEVO: Método para volver a la página/pestaña anterior del historial
+  goBack() {
+    this.location.back();
   }
 
   toggleAccountMenu() {
@@ -64,9 +77,10 @@ export class HeaderComponent implements OnInit {
     this.isAdminMode = !this.isAdminMode;
     this.showAccountMenu = false;
     localStorage.setItem('miracle_admin_mode', String(this.isAdminMode));
+    
+    // Emitimos el cambio al componente padre (ya sea Dashboard o Menú Admin)
     this.adminModeChange.emit(this.isAdminMode);
   }
-
   cerrarSesion() {
     this.showAccountMenu = false;
     localStorage.removeItem('miracle_admin_mode');

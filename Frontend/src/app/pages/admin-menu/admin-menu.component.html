@@ -1,0 +1,49 @@
+<ion-content class="admin-content">
+  <!-- Agregamos (adminModeChange) aquí -->
+  <app-header [showBack]="true" backRoute="/dashboard" backText="Volver" (adminModeChange)="handleAdminModeChange($event)"></app-header>
+
+
+  <div class="admin-container">
+    <h1 class="page-title">Menú Admin</h1>
+
+    <div class="admin-grid">
+      
+      <!-- Tarjeta 1: Administrar Foro -->
+      <div class="admin-card">
+        <div class="card-header-row">
+          <h2>Administrar Foro</h2>
+          <span class="card-badge">Moderación</span>
+        </div>
+        <p class="card-desc">Eliminación permanente de comentarios que infringen las normas.</p>
+        <button type="button" class="action-btn" routerLink="/admin/foro">
+          Eliminar Comentario
+        </button>
+      </div>
+
+      <!-- Tarjeta 2: Restringir Usuarios -->
+      <div class="admin-card">
+        <div class="card-header-row">
+          <h2>Restringir Usuarios</h2>
+          <span class="card-badge">Acceso</span>
+        </div>
+        <p class="card-desc">Baneo y restricción de acceso a usuarios del sistema.</p>
+        <button type="button" class="action-btn" routerLink="/admin/usuarios">
+          Restringir cuenta
+        </button>
+      </div>
+
+      <!-- Tarjeta 3: Enviar Alertas/Avisos (Ancho completo) -->
+      <div class="admin-card full-width">
+        <div class="card-header-row">
+          <h2>Enviar Alertas/Avisos</h2>
+          <span class="card-badge">Notificaciones</span>
+        </div>
+        <p class="card-desc">Envío de alertas por correo a usuarios individuales o masivos.</p>
+        <button type="button" class="action-btn" routerLink="/admin/alertas">
+          Enviar Alertas
+        </button>
+      </div>
+
+    </div>
+  </div>
+</ion-content>

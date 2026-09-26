@@ -1,0 +1,126 @@
+<ion-content class="admin-content">
+  <!-- Header con el botón para volver al menú de admin -->
+  <app-header 
+    [showBack]="true" 
+    backRoute="/admin" 
+    backText="Volver al Menú" 
+    (adminModeChange)="handleAdminModeChange($event)">
+  </app-header>
+
+  <div class="admin-container">
+    
+    <!-- Título principal -->
+    <div class="header-titles">
+      <h1 class="page-title">Restringir Usuarios (Baneos)</h1>
+      <p class="page-subtitle">Selecciona al usuario, define la duración de la restricción y agrega una nota administrativa antes de aplicar la acción.</p>
+    </div>
+
+    <!-- Layout de Dos Columnas -->
+    <div class="ban-layout">
+      
+      <!-- COLUMNA IZQUIERDA: Buscador y Lista de Usuarios -->
+      <div class="left-panel">
+        <div class="search-box-container">
+          <label class="section-label">BUSCAR USUARIO</label>
+          <div class="search-input-wrapper">
+            <ion-icon name="search-outline" class="search-icon"></ion-icon>
+            <input 
+              type="text" 
+              class="search-input" 
+              [(ngModel)]="filtroBusqueda" 
+              placeholder="Buscar por nombre o correo..." 
+            />
+          </div>
+        </div>
+
+        <!-- Lista de Usuarios -->
+        <div class="users-list">
+          <div 
+            class="user-item" 
+            *ngFor="let user of usuariosFiltrados" 
+            [class.selected]="usuarioSeleccionado?.id === user.id"
+            (click)="seleccionarUsuario(user)">
+            
+            <div class="user-item-info">
+              <span class="user-name">{{ user.nombre }}</span>
+              <span class="user-email">{{ user.correo }}</span>
+            </div>
+
+            <span class="status-badge" [ngClass]="user.estadoClase">
+              {{ user.estado }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: Detalle del usuario y Formulario de Restricción -->
+      <div class="right-panel" *ngIf="usuarioSeleccionado">
+        
+        <!-- Tarjeta de Resumen del Usuario Seleccionado -->
+        <div class="selected-user-card">
+          <div class="user-main-info">
+            <div class="user-avatar">{{ usuarioSeleccionado.iniciales }}</div>
+            <div>
+              <h2 class="selected-name">{{ usuarioSeleccionado.nombre }}</h2>
+              <span class="user-id">ID de cuenta: #{{ usuarioSeleccionado.id }}</span>
+            </div>
+          </div>
+          <div class="current-status-display">
+            Estado Actual: <span class="status-badge" [ngClass]="usuarioSeleccionado.estadoClase">{{ usuarioSeleccionado.estado }}</span>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Configuración de Restricción -->
+        <div class="restriction-config-card">
+          <h3 class="config-title">Configurar Nueva Restricción Temporal</h3>
+          
+          <div class="form-group">
+            <label class="form-label">Duración de la restricción</label>
+            <div class="duration-buttons">
+              <button 
+                type="button" 
+                class="duration-btn" 
+                *ngFor="let dur of [ {label: '24 h', val: 1}, {label: '3 días', val: 3}, {label: '7 días', val: 7}, {label: '30 días', val: 30} ]"
+                [class.active]="duracionDias === dur.val"
+                (click)="seleccionarDuracion(dur.val)">
+                {{ dur.label }}
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="customDays">O define una duración personalizada (en días):</label>
+            <input 
+              type="number" 
+              id="customDays" 
+              class="form-input" 
+              [(ngModel)]="duracionDias" 
+              placeholder="Ej. 15" 
+              min="1"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="adminNotes">Notas administrativas adicionales (Internas)</label>
+            <input 
+              type="text" 
+              id="adminNotes" 
+              class="form-input" 
+              [(ngModel)]="notaAdmin" 
+              placeholder="Comentario no debido" 
+            />
+          </div>
+
+          <!-- Botones de Acción inferiores -->
+          <div class="action-buttons-row">
+            <button type="button" class="btn-cancel" (click)="cancelar()">Cancelar</button>
+            <button type="button" class="btn-apply" (click)="aplicarRestriccion()">Aplicar Restricción</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</ion-content>
