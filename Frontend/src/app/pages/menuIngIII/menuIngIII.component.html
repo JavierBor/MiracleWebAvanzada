@@ -1,0 +1,115 @@
+<ion-header class="ion-no-border">
+  <div class="miracle-navbar">
+    <div class="navbar-container">
+      
+      <!-- Izquierda: Volver al Menú -->
+      <div class="back-box" routerLink="/dashboard">
+        <ion-icon name="home-outline" class="nav-icon"></ion-icon>
+        <span class="back-text">Volver al Menú</span>
+      </div>
+
+      <!-- Centro: Logo + MIRACLE + ING-III -->
+      <div class="brand-box">
+        <div class="nav-logo-wrapper">
+          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
+        </div>
+        <span class="brand-title">MIRACLE</span>
+        <span class="course-badge">ING-III</span>
+        <span class="admin-badge" *ngIf="isAdminMode">ADMIN</span>
+      </div>
+
+      <!-- Derecha: Mi Cuenta con Dropdown -->
+      <div class="account-wrapper">
+        <div class="account-box" (click)="toggleAccountMenu()">
+          <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
+          <span class="account-text">Mi Cuenta</span>
+          <ion-icon name="chevron-down-outline" class="chevron-icon" [class.rotated]="showAccountMenu"></ion-icon>
+        </div>
+
+        <!-- Menú desplegable -->
+        <div class="dropdown-menu" *ngIf="showAccountMenu">
+          <button type="button" class="dropdown-item" (click)="toggleAdminMode()">
+            <ion-icon name="shield-checkmark-outline" class="dropdown-icon"></ion-icon>
+            <span>{{ isAdminMode ? 'Salir de Modo Admin' : 'Modo Admin' }}</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item logout-item" (click)="cerrarSesion()">
+            <ion-icon name="log-out-outline" class="dropdown-icon"></ion-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="miracle-bg">
+  <div class="main-container">
+    
+    <!-- Encabezado de la sección -->
+    <div class="section-header">
+      <h1 class="section-title">Juegos Interactivos de ING-III</h1>
+      <p class="section-subtitle">Practica tu vocabulario, gramática y agilidad mental mientras te diviertes.</p>
+    </div>
+
+    <!-- Grilla de 3 Tarjetas -->
+    <div class="games-grid">
+
+      <!-- Juego 1: The 3 Buttons -->
+      <div class="game-card">
+        <div class="card-top">
+          <div class="category-pill">
+            <span class="pill-emoji">🔘</span>
+            <span class="pill-text">COLOCACIONES</span>
+          </div>
+          <h2 class="game-title">The 3 Buttons</h2>
+          <p class="game-description">
+            En la pantalla tendrás tres botones fijos: "MAKE", "DO" y "GIVE". En el centro irán apareciendo diferentes palabras o frases. Tu objetivo es reaccionar rápido y tocar el verbo correcto que acompaña a esa palabra para no perder vidas.
+          </p>
+        </div>
+        <button type="button" class="btn-play" (click)="irAJuego('/the-3-buttons')">
+          <span>Jugar</span>
+          <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Juego 2: Order the Advice -->
+      <div class="game-card">
+        <div class="card-top">
+          <div class="category-pill">
+            <span class="pill-emoji">🗣️</span>
+            <span class="pill-text">CONSEJOS</span>
+          </div>
+          <h2 class="game-title">Order the Advice</h2>
+          <p class="game-description">
+            Se te presentará un problema al azar (por ejemplo: "I have a headache 🤕") junto con varios bloques de palabras desordenados. Tu misión es arrastrar y ordenar estos bloques para formar una oración que le dé un buen consejo.
+          </p>
+        </div>
+        <button type="button" class="btn-play" (click)="irAJuego('/order-the-advice')">
+          <span>Jugar</span>
+          <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Juego 3: Future Predictor -->
+      <div class="game-card">
+        <div class="card-top">
+          <div class="category-pill">
+            <span class="pill-emoji">🔮</span>
+            <span class="pill-text">GRAMÁTICA</span>
+          </div>
+          <h2 class="game-title">Future Predictor</h2>
+          <p class="game-description">
+            Te daremos una situación inicial (como "The sky is very dark ☁️") y predecirás qué pasará a continuación. Elige la mejor opción gramatical usando "will", "won't" o "might" para demostrar tus habilidades de predicción.
+          </p>
+        </div>
+        <button type="button" class="btn-play" (click)="irAJuego('/future-predictor')">
+          <span>Jugar</span>
+          <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</ion-content>

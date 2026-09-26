@@ -20,5 +20,35 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () =>
       import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+  },
+  {
+    path: 'menuIngI',
+    loadComponent: () =>
+      import('./pages/menuIngI/menuIngI.component').then((m) => m.MenuIngIComponent),
+  },
+  {
+    path: 'menuIngII',
+    loadComponent: () =>
+      import('./pages/menuIngII/menuIngII.component').then((m) => m.MenuIngIIComponent),
+  },
+  {
+    path: 'menuIngIII',
+    loadComponent: () =>
+      import('./pages/menuIngIII/menuIngIII.component').then((m) => m.MenuIngIIIComponent),
+  },
+  {
+    path: 'menuIngIV',
+    loadComponent: () =>
+      import('./pages/menuIngIV/menuIngIV.component').then((m) => m.MenuIngIVComponent),
+  },
+  {
+    path: 'verb-transformer',
+    loadComponent: () =>
+      import('./pages/verb-transformer/verb-transformer.component').then((m) => m.VerbTransformerComponent),
+  },
+  {
+    path: 'foro',
+    loadComponent: () =>
+      import('./pages/foro/foro.component').then((m) => m.ForoComponent),
   }
 ];

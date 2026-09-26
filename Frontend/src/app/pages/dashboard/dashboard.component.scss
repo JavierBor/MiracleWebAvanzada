@@ -1,84 +1,187 @@
-/* --- NAVBAR Y ESTRUCTURA --- */
-.miracle-navbar { background-color: #7900ba; color: #ffffff; min-height: 60px; padding: 8px 24px 8px 20px; display: flex; align-items: center; width: 100%; box-sizing: border-box; }
-.navbar-container { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.miracle-bg {
+  --background: #dcdcdc;
+  background-color: #dcdcdc;
+}
 
-.back-box { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #ffffff; font-family: system-ui, sans-serif; font-size: 14px; }
-.back-icon { font-size: 18px; }
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 36px 24px;
+}
 
-.brand-box { display: flex; align-items: center; gap: 14px; cursor: pointer; text-decoration: none; }
-.nav-logo-wrapper { width: 44px; height: 40px; background-color: #ffffff; border-radius: 4px; display: flex; align-items: center; justify-content: center; padding: 3px; box-sizing: border-box; }
-.logo-img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.brand-title { color: #ffffff; font-family: 'Times New Roman', Georgia, serif; font-size: 25px; letter-spacing: 2px; font-weight: 400; }
+.welcome-section {
+  margin-bottom: 28px;
+}
 
-.account-box { display: flex; align-items: center; gap: 8px; color: #ffffff; cursor: pointer; }
-.account-icon { font-size: 34px; color: #ffffff; }
-.account-text { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: 500; color: #ffffff; }
-.chevron-icon { font-size: 14px; color: #ffffff; }
+.welcome-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: #1e1e1e;
+  margin: 0 0 6px 0;
+}
 
-.miracle-bg { --background: #ededed; background-color: #ededed; }
-.main-wrapper { display: flex; justify-content: center; align-items: flex-start; padding: 36px 40px; min-height: calc(100vh - 60px); box-sizing: border-box; }
+.welcome-subtitle {
+  font-size: 15px;
+  color: #555555;
+  margin: 0;
+}
 
-/* --- CONTENEDOR Y TÍTULO --- */
-.dashboard-container { width: 100%; max-width: 1000px; box-sizing: border-box; }
-.main-title { font-family: 'Times New Roman', Georgia, serif; font-size: 38px; color: #7900ba; margin: 0 0 24px 0; font-weight: 400; }
+/* Grilla de los 4 niveles de Inglés */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 28px;
 
-/* --- TARJETAS DE CURSOS --- */
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .course-card {
   background-color: #ffffff;
-  border: 1px solid #cccccc;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  padding: 24px;
-  margin-bottom: 20px;
-  box-sizing: border-box;
+  border-radius: 16px;
+  padding: 24px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 140px;
+  min-height: 290px;
 }
 
-.card-top {
-  display: flex;
-  justify-content: space-between;
+.course-pill {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 12px;
+  gap: 8px;
+  background-color: #f5ebff;
+  padding: 6px 12px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.pill-emoji {
+  font-size: 16px;
+}
+
+.pill-sigla {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6c00b8;
+  letter-spacing: 0.5px;
 }
 
 .course-title {
-  font-family: 'Times New Roman', Georgia, serif;
-  font-size: 32px;
-  color: #7900ba;
-  margin: 0;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 24px;
   font-weight: 400;
-  letter-spacing: 1px;
+  color: #6c00b8;
+  margin: 0 0 12px 0;
 }
 
-.course-desc {
-  font-family: system-ui, sans-serif;
-  font-size: 14px;
-  color: #4a4a4a;
-  margin: 0;
-  line-height: 1.4;
+.course-description {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #555555;
+  margin: 0 0 20px 0;
 }
 
-/* --- BOTÓN ENTRAR --- */
 .btn-enter {
-  background-color: #7900ba;
+  width: 100%;
+  background-color: #6c00b8;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  padding: 8px 24px;
-  font-family: system-ui, sans-serif;
+  border-radius: 999px;
+  padding: 12px 18px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s, transform 0.1s;
+
+  &:hover {
+    background-color: #580096;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
-.btn-enter:hover {
-  background-color: #630099;
+/* Tarjeta Inferior del Foro */
+.foro-banner-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 26px 28px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
-@media (max-width: 768px) {
-  .main-wrapper { padding: 20px 16px; }
+.foro-banner-info {
+  max-width: 720px;
+}
+
+.foro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #f5ebff;
+  color: #6c00b8;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.foro-banner-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: #6c00b8;
+  margin: 0 0 8px 0;
+}
+
+.foro-banner-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555555;
+  margin: 0;
+}
+
+.btn-foro {
+  background-color: #6c00b8;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+
+  &:hover {
+    background-color: #580096;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.btn-icon {
+  font-size: 18px;
 }

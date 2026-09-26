@@ -10,11 +10,12 @@ import {
   IonRow,
   IonCol,
   IonInput,
-  IonIcon
+  IonIcon,
 } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
 import { personCircleOutline, chevronDownOutline, arrowBackOutline } from 'ionicons/icons';
+import { HeaderComponent } from '../../components/header/header.component';
 
 @Component({
   selector: 'app-login',
@@ -31,7 +32,8 @@ import { personCircleOutline, chevronDownOutline, arrowBackOutline } from 'ionic
     IonRow,
     IonCol,
     IonInput,
-    IonIcon
+    IonIcon,
+    HeaderComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

@@ -1,0 +1,115 @@
+<ion-header class="ion-no-border">
+  <div class="miracle-navbar">
+    <div class="navbar-container">
+      
+      <!-- Izquierda: Volver al Menú -->
+      <div class="back-box" routerLink="/dashboard">
+        <ion-icon name="home-outline" class="nav-icon"></ion-icon>
+        <span class="back-text">Volver al Menú</span>
+      </div>
+
+      <!-- Centro: Logo + MIRACLE + ING-II -->
+      <div class="brand-box">
+        <div class="nav-logo-wrapper">
+          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
+        </div>
+        <span class="brand-title">MIRACLE</span>
+        <span class="course-badge">ING-II</span>
+        <span class="admin-badge" *ngIf="isAdminMode">ADMIN</span>
+      </div>
+
+      <!-- Derecha: Mi Cuenta con Dropdown -->
+      <div class="account-wrapper">
+        <div class="account-box" (click)="toggleAccountMenu()">
+          <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
+          <span class="account-text">Mi Cuenta</span>
+          <ion-icon name="chevron-down-outline" class="chevron-icon" [class.rotated]="showAccountMenu"></ion-icon>
+        </div>
+
+        <!-- Menú desplegable -->
+        <div class="dropdown-menu" *ngIf="showAccountMenu">
+          <button type="button" class="dropdown-item" (click)="toggleAdminMode()">
+            <ion-icon name="shield-checkmark-outline" class="dropdown-icon"></ion-icon>
+            <span>{{ isAdminMode ? 'Salir de Modo Admin' : 'Modo Admin' }}</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item logout-item" (click)="cerrarSesion()">
+            <ion-icon name="log-out-outline" class="dropdown-icon"></ion-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="miracle-bg">
+  <div class="main-container">
+    
+    <!-- Encabezado de la sección -->
+    <div class="section-header">
+      <h1 class="section-title">Juegos Interactivos de ING-II</h1>
+      <p class="section-subtitle">Practica tu vocabulario, gramática y agilidad mental mientras te diviertes.</p>
+    </div>
+
+    <!-- Grilla de 3 Tarjetas -->
+    <div class="games-grid">
+
+      <!-- Juego 1: Verb Transformer -->
+      <div class="game-card">
+        <div class="card-top">
+          <div class="category-pill">
+            <span class="pill-emoji">🏃</span>
+            <span class="pill-text">VERBOS</span>
+          </div>
+          <h2 class="game-title">Verb Transformer</h2>
+          <p class="game-description">
+            Un verbo en su forma base aparecerá en la pantalla (por ejemplo: "Go" 🏃). Tu objetivo es usar el teclado para escribir rápidamente su forma correcta en pasado (por ejemplo: "went") y presionar Enter. A medida que aciertes, el sistema se adaptará y te enviará verbos más desafiantes, si pierdes tendras que empezar de 0. CONSIGUE TU MEJOR RACHA.
+          </p>
+        </div>
+        <button type="button" class="btn-play" routerLink="/verb-transformer">
+          <span>Jugar</span>
+          <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Juego 2: Now or Everyday -->
+      <div class="game-card">
+        <div class="card-top">
+          <div class="category-pill">
+            <span class="pill-emoji">👕</span>
+            <span class="pill-text">TIEMPOS VERBALES</span>
+          </div>
+          <h2 class="game-title">Now or Everyday</h2>
+          <p class="game-description">
+            Lee atentamente la oración incompleta en pantalla, la cual describe la ropa que alguien usa habitualmente o en este preciso momento. Deberás elegir entre dos botones para seleccionar la forma verbal correcta (por ejemplo: "wear" o "am wearing"). ¡Las oraciones se mezclarán al azar en cada partida!
+          </p>
+        </div>
+        <button type="button" class="btn-play" (click)="irAJuego('/now-or-everyday')">
+          <span>Jugar</span>
+          <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Juego 3: Transport Sorter -->
+      <div class="game-card">
+        <div class="card-top">
+          <div class="category-pill">
+            <span class="pill-emoji">🚀</span>
+            <span class="pill-text">CLASIFICACIÓN</span>
+          </div>
+          <h2 class="game-title">Transport Sorter</h2>
+          <p class="game-description">
+            Distintos emojis de medios de transporte (✈️, 🚗, 🚢) caerán desde la parte superior de la pantalla. Tu misión es clasificarlos presionando rápidamente el botón correcto correspondiente a su entorno (Aire, Tierra o Agua) antes de que toquen el fondo. ¡A medida que ganes puntos, caerán mucho más rápido!
+          </p>
+        </div>
+        <button type="button" class="btn-play" (click)="irAJuego('/transport-sorter')">
+          <span>Jugar</span>
+          <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</ion-content>

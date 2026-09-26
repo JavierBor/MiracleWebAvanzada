@@ -1,19 +1,5 @@
 <ion-header class="ion-no-border">
-  <div class="miracle-navbar">
-    <div class="navbar-container">
-      <div class="brand-box" routerLink="/">
-        <div class="nav-logo-wrapper">
-          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
-        </div>
-        <span class="brand-title">MIRACLE</span>
-      </div>
-      <div class="account-box">
-        <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
-        <span class="account-text">Mi Cuenta</span>
-        <ion-icon name="chevron-down-outline" class="chevron-icon"></ion-icon>
-      </div>
-    </div>
-  </div>
+  <app-header [showBack]="false"></app-header>
 </ion-header>
 
 <ion-content class="miracle-bg">
@@ -41,7 +27,7 @@
             <ion-col size="12" size-md="6" class="col-right">
               <div class="field-container">
                 <label>RUT</label>
-                <ion-input fill="outline" mode="md" placeholder="12.345.678-9" formControlName="rut"></ion-input>
+                <ion-input fill="outline" mode="md" placeholder="12345678-9" formControlName="rut"></ion-input>
                 <span class="error-msg" *ngIf="registroForm.get('rut')?.touched && registroForm.get('rut')?.invalid">
                   Formato RUT requerido (ej: 12345678-9).
                 </span>
@@ -62,6 +48,9 @@
               <div class="field-container">
                 <label>Región</label>
                 <ion-input fill="outline" mode="md" placeholder="Ej: Valparaíso" formControlName="region"></ion-input>
+                <span class="error-msg" *ngIf="registroForm.get('region')?.touched && registroForm.get('region')?.invalid">
+                  La región es obligatoria.
+                </span>
               </div>
             </ion-col>
 
@@ -70,6 +59,9 @@
               <div class="field-container">
                 <label>Comuna</label>
                 <ion-input fill="outline" mode="md" placeholder="Ej: Viña del Mar" formControlName="comuna"></ion-input>
+                <span class="error-msg" *ngIf="registroForm.get('comuna')?.touched && registroForm.get('comuna')?.invalid">
+                  La comuna es obligatoria.
+                </span>
               </div>
             </ion-col>
             <ion-col size="12" size-md="6" class="col-right">
@@ -83,6 +75,9 @@
                 <ion-input fill="outline" mode="md" placeholder="••••••••" [type]="showPassword ? 'text' : 'password'" formControlName="password">
                   <ion-icon slot="end" [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" (click)="showPassword = !showPassword" style="cursor: pointer; margin-right: 8px;"></ion-icon>
                 </ion-input>
+                <span class="error-msg" *ngIf="registroForm.get('password')?.touched && registroForm.get('password')?.invalid">
+                  Mínimo 6 caracteres.
+                </span>
               </div>
             </ion-col>
             <ion-col size="12" size-md="6" class="col-right">
@@ -100,10 +95,15 @@
           Las contraseñas no coinciden.
         </span>
 
+        <!-- Checkbox nativo limpio (sin el SVG gigante de Ionic) -->
         <div class="terms-container">
-          <ion-checkbox formControlName="terminos" mode="md" labelPlacement="end">
-            Acepto términos y condiciones
-          </ion-checkbox>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" formControlName="terminos" style="width: 16px; height: 16px; cursor: pointer;" />
+            <span>Acepto términos y condiciones</span>
+          </label>
+          <span class="error-msg" *ngIf="registroForm.get('terminos')?.touched && registroForm.get('terminos')?.invalid" style="display: block; margin-top: 4px;">
+            Debes aceptar los términos y condiciones.
+          </span>
         </div>
 
         <button type="submit" class="btn-submit">Registrarse</button>

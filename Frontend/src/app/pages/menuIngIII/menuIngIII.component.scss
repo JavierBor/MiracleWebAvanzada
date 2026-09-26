@@ -1,0 +1,298 @@
+/* Barra de navegación superior */
+.miracle-navbar {
+  background-color: #6c00b8;
+  color: #ffffff;
+  padding: 10px 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Botón Volver al Menú */
+.back-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.nav-icon {
+  font-size: 20px;
+  color: #1a0033;
+}
+
+/* Logo Central */
+.brand-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-logo-wrapper {
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: #ffffff;
+}
+
+.course-badge {
+  background-color: #9d4edd;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.admin-badge {
+  background-color: #ff9800;
+  color: #1a0033;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Mi Cuenta y Menú Desplegable */
+.account-wrapper {
+  position: relative;
+}
+
+.account-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.account-icon {
+  font-size: 28px;
+}
+
+.account-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.chevron-icon {
+  font-size: 16px;
+  transition: transform 0.2s ease;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  min-width: 190px;
+  padding: 6px 0;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #333333;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f3e8ff;
+    color: #6c00b8;
+  }
+}
+
+.dropdown-icon {
+  font-size: 18px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: #eeeeee;
+  margin: 4px 0;
+}
+
+.logout-item {
+  color: #d32f2f;
+
+  &:hover {
+    background-color: #ffebee;
+    color: #b71c1c;
+  }
+}
+
+/* Fondo y Contenedor Principal */
+.miracle-bg {
+  --background: #dcdcdc;
+  background-color: #dcdcdc;
+}
+
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 36px 24px;
+}
+
+.section-header {
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1e1e1e;
+  margin: 0 0 6px 0;
+}
+
+.section-subtitle {
+  font-size: 15px;
+  color: #666666;
+  margin: 0;
+}
+
+/* Grilla de Tarjetas */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 680px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.game-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 420px;
+}
+
+/* Etiqueta superior de cada tarjeta */
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f5ebff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.pill-emoji {
+  font-size: 18px;
+}
+
+.pill-text {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6c00b8;
+  letter-spacing: 0.5px;
+}
+
+/* Textos de la tarjeta */
+.game-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: #6c00b8;
+  margin: 0 0 16px 0;
+}
+
+.game-description {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #555555;
+  margin: 0 0 24px 0;
+}
+
+/* Botón Jugar */
+.btn-play {
+  width: 100%;
+  background-color: #6c00b8;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+
+  &:hover {
+    background-color: #580096;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.play-icon {
+  font-size: 18px;
+}

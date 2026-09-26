@@ -1,0 +1,186 @@
+<ion-header class="ion-no-border">
+  <div class="miracle-navbar">
+    <div class="navbar-container">
+      
+      <!-- Izquierda: Volver -->
+      <div class="back-box" routerLink="/dashboard">
+        <ion-icon name="home-outline" class="nav-icon"></ion-icon>
+        <span class="back-text">Volver</span>
+      </div>
+
+      <!-- Centro: Logo + MIRACLE + FORO -->
+      <div class="brand-box">
+        <div class="nav-logo-wrapper">
+          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
+        </div>
+        <span class="brand-title">MIRACLE</span>
+        <span class="course-badge">FORO</span>
+        <span class="admin-badge" *ngIf="isAdminMode">ADMIN</span>
+      </div>
+
+      <!-- Derecha: Mi Cuenta con Dropdown -->
+      <div class="account-wrapper">
+        <div class="account-box" (click)="toggleAccountMenu()">
+          <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
+          <span class="account-text">Mi Cuenta</span>
+          <ion-icon name="chevron-down-outline" class="chevron-icon" [class.rotated]="showAccountMenu"></ion-icon>
+        </div>
+
+        <!-- Menú desplegable -->
+        <div class="dropdown-menu" *ngIf="showAccountMenu">
+          <button type="button" class="dropdown-item" (click)="toggleAdminMode()">
+            <ion-icon name="shield-checkmark-outline" class="dropdown-icon"></ion-icon>
+            <span>{{ isAdminMode ? 'Salir de Modo Admin' : 'Modo Admin' }}</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item logout-item" (click)="cerrarSesion()">
+            <ion-icon name="log-out-outline" class="dropdown-icon"></ion-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="miracle-foro-bg">
+  <div class="foro-main-container">
+
+    <!-- Encabezado superior con botón + Nueva Publicación -->
+    <div class="foro-top-bar">
+      <div class="foro-titles">
+        <h1 class="foro-heading">Foro de la Comunidad Miracle</h1>
+        <p class="foro-subheading">Consulta dudas públicas y comparte conocimientos con otros estudiantes.</p>
+      </div>
+
+      <button type="button" class="btn-new-post" (click)="abrirModalNuevaPublicacion()">
+        <ion-icon name="add-outline" class="add-icon"></ion-icon>
+        <span>Nueva Publicación</span>
+      </button>
+    </div>
+
+    <!-- Layout de 2 Columnas (Feed Izquierda + Normas Derecha) -->
+    <div class="foro-layout">
+
+      <!-- Columna Izquierda: Buscador y Lista de Publicaciones -->
+      <div class="foro-feed-col">
+
+        <!-- Caja del Buscador -->
+        <div class="search-card">
+          <div class="search-input-box">
+            <ion-icon name="search-outline" class="search-icon"></ion-icon>
+            <input
+              type="text"
+              placeholder="Buscar consultas..."
+              [(ngModel)]="terminoBusqueda"
+              class="search-input"
+            />
+          </div>
+        </div>
+
+        <!-- Tarjetas de Publicaciones -->
+        <div class="post-card" *ngFor="let post of publicacionesFiltradas">
+          <div class="post-card-header">
+            <div class="author-box">
+              <div class="avatar-circle">{{ post.inicial }}</div>
+              <div class="author-meta">
+                <span class="author-name">{{ post.autor }}</span>
+                <span class="post-time">{{ post.tiempo }}</span>
+              </div>
+            </div>
+
+            <div class="badges-box">
+              <span class="tag-course">{{ post.curso }}</span>
+              <span class="tag-category">{{ post.categoria }}</span>
+              <button
+                type="button"
+                class="btn-delete-admin"
+                *ngIf="isAdminMode"
+                (click)="eliminarPublicacion(post.id, $event)"
+                title="Eliminar publicación (Admin)"
+              >
+                <ion-icon name="trash-outline"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+          <h2 class="post-title">{{ post.titulo }}</h2>
+          <p class="post-body">{{ post.contenido }}</p>
+        </div>
+
+        <!-- Estado vacío si la búsqueda no coincide -->
+        <div class="empty-results" *ngIf="publicacionesFiltradas.length === 0">
+          No se encontraron consultas que coincidan con "{{ terminoBusqueda }}".
+        </div>
+
+      </div>
+
+      <!-- Columna Derecha: Normas de convivencia -->
+      <div class="foro-sidebar-col">
+        <div class="rules-card">
+          <h3 class="rules-title">Normas de convivencia</h3>
+          <p class="rules-text">
+            Sé amable, respeta las dudas de los demás y trata de escribir tus ejemplos en inglés para practicar juntos.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal emergente para crear Nueva Publicación -->
+    <div class="modal-backdrop" *ngIf="mostrarModalNuevo">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title">Nueva Publicación</h3>
+          <button type="button" class="btn-close-modal" (click)="cerrarModalNuevaPublicacion()">
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </div>
+
+        <form (ngSubmit)="crearPublicacion()" class="modal-form">
+          <div class="form-row-split">
+            <div class="form-group">
+              <label>Tu nombre</label>
+              <input type="text" [(ngModel)]="nuevoAutor" name="nuevoAutor" placeholder="Ej: Nombre Apellido" class="modal-input" />
+            </div>
+            <div class="form-group">
+              <label>Asignatura</label>
+              <select [(ngModel)]="nuevoCurso" name="nuevoCurso" class="modal-input">
+                <option value="ING-I">ING-I</option>
+                <option value="ING-II">ING-II</option>
+                <option value="ING-III">ING-III</option>
+                <option value="ING-IV">ING-IV</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Categoría</label>
+              <select [(ngModel)]="nuevaCategoria" name="nuevaCategoria" class="modal-input">
+                <option value="Gramática">Gramática</option>
+                <option value="Vocabulario">Vocabulario</option>
+                <option value="Pronunciación">Pronunciación</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Título de tu duda</label>
+            <input type="text" [(ngModel)]="nuevoTitulo" name="nuevoTitulo" placeholder="Ej: ¿Cuándo usar 'make' vs 'do'?" class="modal-input" required />
+          </div>
+
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea rows="4" [(ngModel)]="nuevoContenido" name="nuevoContenido" placeholder="Escribe los detalles de tu consulta..." class="modal-textarea" required></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" (click)="cerrarModalNuevaPublicacion()">Cancelar</button>
+            <button type="submit" class="btn-publish">Publicar consulta</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</ion-content>

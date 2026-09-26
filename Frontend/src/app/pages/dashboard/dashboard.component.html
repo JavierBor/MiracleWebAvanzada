@@ -1,96 +1,50 @@
-<ion-header class="ion-no-border">
-  <div class="miracle-navbar">
-    <div class="navbar-container">
-      
-      <!-- Botón Volver a la izquierda -->
-      <div class="back-box" routerLink="/">
-        <ion-icon name="home-outline" class="back-icon"></ion-icon>
-        <span class="back-text">Volver</span>
-      </div>
-
-      <!-- Logo y Título al centro -->
-      <div class="brand-box" routerLink="/">
-        <div class="nav-logo-wrapper">
-          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
-        </div>
-        <span class="brand-title">MIRACLE</span>
-      </div>
-
-      <!-- Mi Cuenta a la derecha -->
-      <div class="account-box">
-        <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
-        <span class="account-text">Mi Cuenta</span>
-        <ion-icon name="chevron-down-outline" class="chevron-icon"></ion-icon>
-      </div>
-
-    </div>
-  </div>
-</ion-header>
+<app-header [showBack]="false" (adminModeChange)="isAdminMode = $event"></app-header>
 
 <ion-content class="miracle-bg">
-  <div class="main-wrapper">
-    
-    <div class="dashboard-container">
-      <h1 class="main-title">Menú principal</h1>
+  <div class="dashboard-container">
 
-      <ion-grid class="ion-no-padding">
-        <ion-row>
-          <!-- Tarjeta ING-I -->
-          <ion-col size="12" size-md="6">
-            <div class="course-card">
-              <div class="card-top">
-                <h2 class="course-title">ING-I</h2>
-                <button class="btn-enter" routerLink="/juegos">Entrar</button>
-              </div>
-              <p class="course-desc">Accede a múltiples juegos para practicar.</p>
-            </div>
-          </ion-col>
+    <!-- Encabezado de Bienvenida -->
+    <div class="welcome-section">
+      <h1 class="welcome-title">Bienvenido a Miracle</h1>
+      <p class="welcome-subtitle">Selecciona tu nivel de inglés para comenzar a jugar o participa en el foro de la comunidad.</p>
+    </div>
 
-          <!-- Tarjeta ING-II -->
-          <ion-col size="12" size-md="6">
-            <div class="course-card">
-              <div class="card-top">
-                <h2 class="course-title">ING-II</h2>
-                <button class="btn-enter" routerLink="/curso-ii">Entrar</button>
-              </div>
-              <p class="course-desc">Accede a contenidos, actividades y recursos del curso.</p>
-            </div>
-          </ion-col>
+    <!-- Grilla de Cursos (ING-I a ING-IV) -->
+    <div class="courses-grid">
+      <div class="course-card" *ngFor="let curso of cursos">
+        <div class="card-top">
+          <div class="course-pill">
+            <span class="pill-emoji">{{ curso.emoji }}</span>
+            <span class="pill-sigla">{{ curso.sigla }}</span>
+          </div>
+          <h2 class="course-title">{{ curso.titulo }}</h2>
+          <p class="course-description">{{ curso.descripcion }}</p>
+        </div>
 
-          <!-- Tarjeta ING-III -->
-          <ion-col size="12" size-md="6">
-            <div class="course-card">
-              <div class="card-top">
-                <h2 class="course-title">ING-III</h2>
-                <button class="btn-enter" routerLink="/curso-iii">Entrar</button>
-              </div>
-              <p class="course-desc">Accede a contenidos, actividades y recursos del curso.</p>
-            </div>
-          </ion-col>
+        <button type="button" class="btn-enter" (click)="irARuta(curso.ruta)">
+          <span>Ver Juegos</span>
+          <ion-icon name="arrow-forward-outline" class="btn-icon"></ion-icon>
+        </button>
+      </div>
+    </div>
 
-          <!-- Tarjeta ING-IV -->
-          <ion-col size="12" size-md="6">
-            <div class="course-card">
-              <div class="card-top">
-                <h2 class="course-title">ING-IV</h2>
-                <button class="btn-enter" routerLink="/curso-iv">Entrar</button>
-              </div>
-              <p class="course-desc">Accede a contenidos, actividades y recursos del curso.</p>
-            </div>
-          </ion-col>
+    <!-- Banner de acceso al Foro de la Comunidad -->
+    <div class="foro-banner-card">
+      <div class="foro-banner-info">
+        <div class="foro-badge">
+          <ion-icon name="chatbubbles-outline"></ion-icon>
+          <span>COMUNIDAD</span>
+        </div>
+        <h2 class="foro-banner-title">Foro de la Comunidad Miracle</h2>
+        <p class="foro-banner-text">
+          ¿Tienes dudas con alguna regla gramatical o vocabulario? Consulta preguntas públicas y comparte conocimientos con otros estudiantes.
+        </p>
+      </div>
 
-          <!-- Tarjeta Foro -->
-          <ion-col size="12" size-md="6">
-            <div class="course-card">
-              <div class="card-top">
-                <h2 class="course-title">Foro</h2>
-                <button class="btn-enter" routerLink="/foro">Entrar</button>
-              </div>
-              <p class="course-desc">Entrá para realizar comentarios, consultas y compartir dudas sobre la materia.</p>
-            </div>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+      <button type="button" class="btn-foro" (click)="irARuta('/foro')">
+        <span>Ir al Foro</span>
+        <ion-icon name="arrow-forward-outline" class="btn-icon"></ion-icon>
+      </button>
     </div>
 
   </div>

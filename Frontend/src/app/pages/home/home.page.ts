@@ -10,6 +10,7 @@ import {
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { personCircleOutline, chevronDownOutline } from 'ionicons/icons';
+import { HeaderComponent } from '../../components/header/header.component';
 
 @Component({
   selector: 'app-home',

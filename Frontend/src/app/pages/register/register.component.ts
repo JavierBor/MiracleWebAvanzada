@@ -1,7 +1,7 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router'; // 1. Se agrega Router aquí
 
 import {
   IonHeader,
@@ -16,6 +16,7 @@ import {
 
 import { addIcons } from 'ionicons';
 import { personCircleOutline, chevronDownOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
+import { HeaderComponent } from '../../components/header/header.component';
 
 @Component({
   selector: 'app-register',
@@ -33,7 +34,8 @@ import { personCircleOutline, chevronDownOutline, eyeOutline, eyeOffOutline } fr
     IonCol,
     IonInput,
     IonCheckbox,
-    IonIcon
+    IonIcon,
+    HeaderComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
@@ -42,7 +44,11 @@ export class RegisterComponent implements OnInit {
   showPassword = false;
   showConfirmPassword = false;
 
-  constructor(private fb: FormBuilder) {
+  // 2. Se inyecta private router: Router en el constructor
+  constructor(
+    private fb: FormBuilder,
+    private router: Router
+  ) {
     addIcons({ personCircleOutline, chevronDownOutline, eyeOutline, eyeOffOutline });
   }
 
@@ -68,7 +74,10 @@ export class RegisterComponent implements OnInit {
   registrar() {
     if (this.registroForm.valid) {
       console.log('Formulario válido:', this.registroForm.value);
+      // 3. Redirige al dashboard solo si todo el formulario es válido
+      this.router.navigate(['/dashboard']);
     } else {
+      // Marca todos los campos para mostrar los errores en pantalla
       this.registroForm.markAllAsTouched();
     }
   }

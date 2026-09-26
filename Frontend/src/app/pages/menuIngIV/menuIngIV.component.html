@@ -1,0 +1,115 @@
+<ion-header class="ion-no-border">
+  <div class="miracle-navbar">
+    <div class="navbar-container">
+      
+      <!-- Izquierda: Volver al Menú -->
+      <div class="back-box" routerLink="/dashboard">
+        <ion-icon name="home-outline" class="nav-icon"></ion-icon>
+        <span class="back-text">Volver al Menú</span>
+      </div>
+
+      <!-- Centro: Logo + MIRACLE + ING-IV -->
+      <div class="brand-box">
+        <div class="nav-logo-wrapper">
+          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
+        </div>
+        <span class="brand-title">MIRACLE</span>
+        <span class="course-badge">ING-IV</span>
+        <span class="admin-badge" *ngIf="isAdminMode">ADMIN</span>
+      </div>
+
+      <!-- Derecha: Mi Cuenta con Dropdown -->
+      <div class="account-wrapper">
+        <div class="account-box" (click)="toggleAccountMenu()">
+          <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
+          <span class="account-text">Mi Cuenta</span>
+          <ion-icon name="chevron-down-outline" class="chevron-icon" [class.rotated]="showAccountMenu"></ion-icon>
+        </div>
+
+        <!-- Menú desplegable -->
+        <div class="dropdown-menu" *ngIf="showAccountMenu">
+          <button type="button" class="dropdown-item" (click)="toggleAdminMode()">
+            <ion-icon name="shield-checkmark-outline" class="dropdown-icon"></ion-icon>
+            <span>{{ isAdminMode ? 'Salir de Modo Admin' : 'Modo Admin' }}</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item logout-item" (click)="cerrarSesion()">
+            <ion-icon name="log-out-outline" class="dropdown-icon"></ion-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="miracle-bg">
+  <div class="main-container">
+    
+    <!-- Encabezado de la sección -->
+    <div class="section-header">
+      <h1 class="section-title">Juegos Interactivos de ING-IV</h1>
+      <p class="section-subtitle">Practica tu vocabulario, gramática y agilidad mental mientras te diviertes.</p>
+    </div>
+
+    <!-- Grilla de 3 Tarjetas -->
+    <div class="games-grid">
+
+      <!-- Juego 1: Passive Selector -->
+      <div class="game-card">
+        <div class="card-top">
+          <div class="category-pill">
+            <span class="pill-emoji">🗣️</span>
+            <span class="pill-text">GRAMÁTICA</span>
+          </div>
+          <h2 class="game-title">Passive Selector</h2>
+          <p class="game-description">
+            Te mostramos una oración común en voz activa (por ejemplo: "The dog ate the pizza 🍕"). Tu misión es leer rápidamente las opciones y seleccionar el botón que contenga la transformación correcta a voz pasiva antes de que se acabe el tiempo.
+          </p>
+        </div>
+        <button type="button" class="btn-play" (click)="irAJuego('/passive-selector')">
+          <span>Jugar</span>
+          <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Juego 2: First Conditional Match -->
+      <div class="game-card">
+        <div class="card-top">
+          <div class="category-pill">
+            <span class="pill-emoji">🔗</span>
+            <span class="pill-text">ESTRUCTURAS</span>
+          </div>
+          <h2 class="game-title">First Conditional Match</h2>
+          <p class="game-description">
+            En la pantalla verás dos columnas: en la izquierda habrá "condiciones" y en la derecha "resultados". Deberás tocar un botón de la izquierda y luego su pareja lógica en la derecha para conectarlos correctamente formando oraciones con el primer condicional.
+          </p>
+        </div>
+        <button type="button" class="btn-play" (click)="irAJuego('/first-conditional-match')">
+          <span>Jugar</span>
+          <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Juego 3: Personality Cards -->
+      <div class="game-card">
+        <div class="card-top">
+          <div class="category-pill">
+            <span class="pill-emoji">🧠</span>
+            <span class="pill-text">VOCABULARIO</span>
+          </div>
+          <h2 class="game-title">Personality Cards</h2>
+          <p class="game-description">
+            Aparecerá una tarjeta con una breve descripción sobre la forma de ser de una persona (por ejemplo: "Someone who is always happy"). Deberás usar tu teclado para escribir el adjetivo de personalidad correcto en inglés. ¡Mientras más aciertes, más complejas serán las palabras!
+          </p>
+        </div>
+        <button type="button" class="btn-play" (click)="irAJuego('/personality-cards')">
+          <span>Jugar</span>
+          <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,101 @@
+<ion-header class="ion-no-border">
+  <div class="miracle-navbar">
+    <div class="navbar-container">
+      
+      <!-- Izquierda: Volver al Menú de ING-II -->
+      <div class="back-box" routerLink="/menuIngII">
+        <ion-icon name="home-outline" class="nav-icon"></ion-icon>
+        <span class="back-text">Volver al Menú</span>
+      </div>
+
+      <!-- Centro: Logo + MIRACLE + ING-II -->
+      <div class="brand-box">
+        <div class="nav-logo-wrapper">
+          <img src="logo.png" alt="Miracle Logo" class="logo-img" />
+        </div>
+        <span class="brand-title">MIRACLE</span>
+        <span class="course-badge">ING-II</span>
+        <span class="admin-badge" *ngIf="isAdminMode">ADMIN</span>
+      </div>
+
+      <!-- Derecha: Mi Cuenta con Dropdown -->
+      <div class="account-wrapper">
+        <div class="account-box" (click)="toggleAccountMenu()">
+          <ion-icon name="person-circle-outline" class="account-icon"></ion-icon>
+          <span class="account-text">Mi Cuenta</span>
+          <ion-icon name="chevron-down-outline" class="chevron-icon" [class.rotated]="showAccountMenu"></ion-icon>
+        </div>
+
+        <!-- Menú desplegable -->
+        <div class="dropdown-menu" *ngIf="showAccountMenu">
+          <button type="button" class="dropdown-item" (click)="toggleAdminMode()">
+            <ion-icon name="shield-checkmark-outline" class="dropdown-icon"></ion-icon>
+            <span>{{ isAdminMode ? 'Salir de Modo Admin' : 'Modo Admin' }}</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item logout-item" (click)="cerrarSesion()">
+            <ion-icon name="log-out-outline" class="dropdown-icon"></ion-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ion-header>
+
+<ion-content class="miracle-game-bg">
+  <div class="game-wrapper">
+
+    <!-- Título del Juego -->
+    <h1 class="game-main-title">Verb Transformer</h1>
+
+    <!-- Píldoras de Estadísticas (Racha, Mejor, Nivel) -->
+    <div class="stats-row">
+      <div class="stat-pill">
+        <span>🔥 Racha: {{ racha }}</span>
+      </div>
+      <div class="stat-pill">
+        <span>🏆 Mejor: {{ mejorRacha }}</span>
+      </div>
+      <div class="stat-pill">
+        <span>Nivel: <strong [ngClass]="{
+          'level-normal': nivelActual === 'Normal',
+          'level-hard': nivelActual === 'Difícil',
+          'level-expert': nivelActual === 'Experto'
+        }"><span>{{ nivelActual }}</span></strong></span>
+      </div>
+    </div>
+
+    <!-- Tarjeta Central con el Verbo -->
+    <div class="verb-display-card" [class.card-correct]="feedbackTipo === 'correcto'" [class.card-error]="feedbackTipo === 'error'">
+      <span class="verb-word">{{ verboActual?.base }}</span>
+      <span class="admin-hint" *ngIf="isAdminMode">
+        Respuesta Admin: {{ verboActual?.past?.[0] }}
+      </span>
+    </div>
+
+    <!-- Mensaje de Feedback (Acierto / Error) -->
+    <div class="feedback-banner" *ngIf="feedbackMensaje" [class.text-success]="feedbackTipo === 'correcto'" [class.text-danger]="feedbackTipo === 'error'">
+      {{ feedbackMensaje }}
+    </div>
+
+    <!-- Formulario de Respuesta (Soporta Enter y Clic) -->
+    <form (ngSubmit)="comprobar()" class="interaction-zone">
+      <input
+        type="text"
+        class="verb-input"
+        placeholder="Escribe el verbo en pasado simple..."
+        [(ngModel)]="respuestaUsuario"
+        name="respuestaUsuario"
+        autocomplete="off"
+      />
+
+      <button type="submit" class="btn-check">
+        <span>Comprobar</span>
+        <ion-icon name="checkmark-outline" class="check-icon"></ion-icon>
+      </button>
+    </form>
+
+  </div>
+</ion-content>

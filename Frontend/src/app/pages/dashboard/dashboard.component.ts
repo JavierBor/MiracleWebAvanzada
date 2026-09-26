@@ -1,18 +1,16 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-
-import {
-  IonHeader,
-  IonContent,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonIcon
-} from '@ionic/angular';
-
+import { Router, RouterLink } from '@angular/router';
+import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { personCircleOutline, chevronDownOutline, homeOutline } from 'ionicons/icons';
+import {
+  bookOutline,
+  chatbubblesOutline,
+  arrowForwardOutline,
+  sparklesOutline
+} from 'ionicons/icons';
+
+import { HeaderComponent } from '../../components/header/header.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,17 +20,56 @@ import { personCircleOutline, chevronDownOutline, homeOutline } from 'ionicons/i
   imports: [
     CommonModule,
     RouterLink,
-    IonHeader,
     IonContent,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonIcon
+    IonIcon,
+    HeaderComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class DashboardComponent {
-  constructor() {
-    addIcons({ personCircleOutline, chevronDownOutline, homeOutline });
+  isAdminMode = false;
+
+  cursos = [
+    {
+      sigla: 'ING-I',
+      titulo: 'Inglés I',
+      descripcion: 'Practica vocabulario contable/incontable, profesiones y estructuras con There is / There are.',
+      ruta: '/menuIngI',
+      emoji: '📘'
+    },
+    {
+      sigla: 'ING-II',
+      titulo: 'Inglés II',
+      descripcion: 'Domina los verbos en pasado simple, tiempos verbales (Present Simple vs Continuous) y medios de transporte.',
+      ruta: '/menuIngII',
+      emoji: '🚀'
+    },
+    {
+      sigla: 'ING-III',
+      titulo: 'Inglés III',
+      descripcion: 'Entrena colocaciones con Make/Do/Give, armado de consejos y predicciones futuras con Will y Might.',
+      ruta: '/menuIngIII',
+      emoji: '🔮'
+    },
+    {
+      sigla: 'ING-IV',
+      titulo: 'Inglés IV',
+      descripcion: 'Perfecciona la voz pasiva, el primer condicional y vocabulario avanzado de personalidad.',
+      ruta: '/menuIngIV',
+      emoji: '🧠'
+    }
+  ];
+
+  constructor(private router: Router) {
+    addIcons({
+      bookOutline,
+      chatbubblesOutline,
+      arrowForwardOutline,
+      sparklesOutline
+    });
+  }
+
+  irARuta(ruta: string) {
+    this.router.navigate([ruta]);
   }
 }
