@@ -3,9 +3,7 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "schematicCollections": [
-      "@ionic/angular-toolkit"
-    ],
+    "schematicCollections": ["angular-eslint", "@ionic/angular-toolkit"],
     "analytics": false
   },
   "newProjectRoot": "projects",
@@ -126,6 +124,12 @@
             "production": {
               "browserTarget": "Frontend:build:production"
             }
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
