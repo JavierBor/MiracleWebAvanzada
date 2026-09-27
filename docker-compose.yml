@@ -1,30 +1,28 @@
-version: '3.8'
-
 services:
   # Base de datos relacional
   database:
-    image: postgres:15-alpine
-    container_name: postgres_db
-    restart: always
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: adminpassword
-      POSTGRES_DB: english_pucv_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      image: postgres:15-alpine
+      container_name: postgres_db
+      restart: always
+      environment:
+        POSTGRES_USER: ${DB_USER}
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+        POSTGRES_DB: ${DB_NAME}
+      ports:
+        - "5432:5432"
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
 
   # Backend principal (NestJS)
   backend:
     build:
-      context: ./Backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: nestjs_backend
     restart: always
     environment:
       PORT: 3000
-      DATABASE_URL: postgresql://admin:adminpassword@database:5432/english_pucv_db
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}
       PYTHON_SERVICE_URL: http://python-service:8000
     ports:
       - "3000:3000"

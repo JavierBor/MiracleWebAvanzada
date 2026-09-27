@@ -7,10 +7,74 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  role      String   @default("student")
-  createdAt DateTime @default(now())
+model Usuario {
+  id              String                  @id @default(uuid())
+  correo          String                  @unique
+  contrasena_hash String
+  rol             RolUsuario              @default(ESTUDIANTE)
+  estado          EstadoUsuario           @default(ACTIVO)
+  restricciones   Restriccion[]
+  interacciones   InteraccionEstudiante[]
+  publicaciones   PublicacionForo[]
+}
+
+model Restriccion {
+  id           String   @id @default(uuid())
+  usuarioId    String
+  fecha_inicio DateTime @default(now())
+  fecha_fin    DateTime
+  nota_admin   String?
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id])
+}
+
+model Juego {
+  id            String                  @id @default(uuid())
+  nivel         NivelJuego
+  categoria     String
+  nombre        String
+  interacciones InteraccionEstudiante[]
+}
+
+model InteraccionEstudiante {
+  id              String   @id @default(uuid())
+  usuarioId       String
+  juegoId         String
+  puntaje         Int
+  errores_comunes Json?    // Clave para que FastAPI analice patrones de error
+  fecha           DateTime @default(now())
+  usuario         Usuario  @relation(fields: [usuarioId], references: [id])
+  juego           Juego    @relation(fields: [juegoId], references: [id])
+}
+
+model PublicacionForo {
+  id             String            @id @default(uuid())
+  usuarioId      String
+  contenido      String
+  estado         EstadoPublicacion @default(ACTIVA)
+  fecha_creacion DateTime          @default(now())
+  usuario        Usuario           @relation(fields: [usuarioId], references: [id])
+}
+
+enum RolUsuario {
+  ESTUDIANTE
+  ADMIN
+}
+
+enum EstadoUsuario {
+  ACTIVO
+  ADVERTIDO
+  RESTRINGIDO
+}
+
+enum NivelJuego {
+  ING_I
+  ING_II
+  ING_III
+  ING_IV
+}
+
+enum EstadoPublicacion {
+  ACTIVA
+  REPORTADA
+  OCULTA
 }

@@ -6,7 +6,7 @@ export class AppService {
   constructor(private prisma: PrismaService) {}
 
   async getHello(): Promise<string> {
-    const userCount = await this.prisma.user.count();
+    const userCount = await this.prisma.usuario.count();
     return `Conexión exitosa con PostgreSQL via Prisma! Usuarios registrados: ${userCount}`;
   }
 }
