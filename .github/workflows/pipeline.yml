@@ -3,6 +3,9 @@ name: DevSecOps Miracle Pipeline
 on: [push]
 
 jobs:
+  # ==========================================
+  # 1. CI Y SEGURIDAD (TRABAJO DE TU COMPAÑERO)
+  # ==========================================
   construccion-y-seguridad:
     name: Integración Continua y DevSecOps
     runs-on: ubuntu-latest
@@ -36,3 +39,53 @@ jobs:
       - name: Construcción de Imágenes Docker
         run: |
           docker compose build
+
+  # ==========================================
+  # 2. VALIDACIÓN DE INFRAESTRUCTURA (TERRAFORM)
+  # ==========================================
+  terraform-iac:
+    name: Validar Infraestructura (Terraform)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Inicializar Terraform
+        run: terraform init -backend=false
+
+      - name: Verificar formato (terraform fmt)
+        run: terraform fmt -check
+
+      - name: Validar configuración (terraform validate)
+        run: terraform validate
+
+      - name: Generar plan de infraestructura (terraform plan)
+        run: terraform plan -no-color
+
+  # ==========================================
+  # 3. CD - DESPLIEGUE CONTINUO A STAGING
+  # ==========================================
+  deploy-staging:
+    name: Despliegue Continuo a Staging (CD)
+    runs-on: ubuntu-latest
+    needs: [construccion-y-seguridad, terraform-iac]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Publicar / Desplegar en Ambiente de Staging
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK_URL" ]; then
+            curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL"
+            echo "Despliegue en Staging activado exitosamente."
+          else
+            echo "Modo preliminar EP1: Pipeline CD configurado. Pendiente vincular URL de Webhook en GitHub Secrets."
+          fi
