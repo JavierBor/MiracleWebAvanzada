@@ -33,16 +33,13 @@
 .field-container { display: flex; flex-direction: column; margin-bottom: 20px; text-align: left; }
 .field-container label { font-family: system-ui, sans-serif; font-size: 14px; color: #333; margin-bottom: 6px; font-weight: 500; }
 
-ion-input { 
+/* Forzar texto oscuro visible dentro de los cuadros de Ionic */
+ion-input {
+  --color: #1a1a1a !important;
+  --placeholder-color: #777777 !important;
+  --placeholder-opacity: 1 !important;
   --background: #ffffff !important;
-  background-color: #ffffff !important;
-  border: 1px solid #cccccc !important;
-  border-radius: 8px !important;
-  padding-left: 12px !important;
-  font-family: system-ui, sans-serif !important;
-  min-height: 44px !important;
-  display: block;
-  width: 100%;
+  color: #1a1a1a !important;
 }
 
 /* --- BOTÓN Y ENLACE --- */

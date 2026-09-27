@@ -6,7 +6,6 @@
   <div class="main-wrapper">
     
     <div class="login-card">
-      <!-- Botón Volver -->
       <div class="back-container">
         <a routerLink="/" class="back-link">
           <ion-icon name="arrow-back-outline"></ion-icon> Volver al inicio
@@ -29,7 +28,13 @@
           <ion-input fill="outline" mode="md" placeholder="••••••••" type="password" formControlName="password"></ion-input>
         </div>
 
-        <button type="submit" class="btn-submit" routerLink="/dashboard">Iniciar sesión</button>
+        <div *ngIf="errorMsg" style="color: #b71c1c; background-color: #fdecea; border: 1px solid #f5c6cb; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; text-align: center;">
+          {{ errorMsg }}
+        </div>
+
+        <button type="button" class="btn-submit" [disabled]="cargando" (click)="iniciarSesion()">
+          {{ cargando ? 'Ingresando...' : 'Iniciar sesión' }}
+        </button>
 
         <div class="register-link">
           ¿No tienes cuenta? <a routerLink="/register">Registrarse</a>

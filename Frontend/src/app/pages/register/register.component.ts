@@ -1,7 +1,7 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router'; // 1. Se agrega Router aquí
+import { Router, RouterLink } from '@angular/router';
 
 import {
   IonHeader,
@@ -17,6 +17,7 @@ import {
 import { addIcons } from 'ionicons';
 import { personCircleOutline, chevronDownOutline, eyeOutline, eyeOffOutline } from 'ionicons/icons';
 import { HeaderComponent } from '../../components/header/header.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -43,11 +44,13 @@ export class RegisterComponent implements OnInit {
   registroForm!: FormGroup;
   showPassword = false;
   showConfirmPassword = false;
+  errorMsg = '';
+  cargando = false;
 
-  // 2. Se inyecta private router: Router en el constructor
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     addIcons({ personCircleOutline, chevronDownOutline, eyeOutline, eyeOffOutline });
   }
@@ -73,11 +76,24 @@ export class RegisterComponent implements OnInit {
 
   registrar() {
     if (this.registroForm.valid) {
-      console.log('Formulario válido:', this.registroForm.value);
-      // 3. Redirige al dashboard solo si todo el formulario es válido
-      this.router.navigate(['/dashboard']);
+      this.errorMsg = '';
+      this.cargando = true;
+
+      const { correo, password } = this.registroForm.value;
+
+      this.authService.register({ correo, contrasena: password }).subscribe({
+        next: (res: any) => {
+          this.cargando = false;
+          console.log('Usuario registrado en BD:', res);
+          this.router.navigate(['/dashboard']);
+        },
+        error: (err: any) => {
+          this.cargando = false;
+          const msg = err.error?.message;
+          this.errorMsg = Array.isArray(msg) ? msg[0] : (msg || 'No se pudo completar el registro');
+        }
+      });
     } else {
-      // Marca todos los campos para mostrar los errores en pantalla
       this.registroForm.markAllAsTouched();
     }
   }
