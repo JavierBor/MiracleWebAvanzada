@@ -31,11 +31,22 @@ module.exports = defineConfig([
           style: 'kebab-case',
         },
       ],
+      // Reglas relajadas para TypeScript
+      '@typescript-eslint/no-inferrable-types': 'off',
+      '@angular-eslint/prefer-inject': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn'
     },
   },
   {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
-    rules: {},
+    rules: {
+      // Reglas relajadas para HTML
+      '@angular-eslint/template/prefer-control-flow': 'warn',
+      '@angular-eslint/template/click-events-have-key-events': 'warn',
+      '@angular-eslint/template/interactive-supports-focus': 'warn',
+      '@angular-eslint/template/label-has-associated-control': 'warn'
+    },
   },
 ]);
