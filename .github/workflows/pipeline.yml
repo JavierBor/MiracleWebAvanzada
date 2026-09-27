@@ -1,0 +1,44 @@
+name: DevSecOps Miracle Pipeline
+
+on: [push]
+
+jobs:
+  construccion-y-seguridad:
+    name: Integración Continua y DevSecOps
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obtención del código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'Microservicio/requirements.txt'
+
+      - name: Instalar dependencias Backend
+        working-directory: ./backend
+        run: |
+          npm ci
+          npx prisma generate
+
+      - name: Detección de secretos expuestos
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Construcción de Imágenes Docker
+        run: |
+          docker-compose build
