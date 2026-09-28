@@ -57,14 +57,14 @@ El proyecto está contenerizado para garantizar una fácil instalación y un ent
 Para ejecutar este proyecto localmente, necesitas tener instalado:
 *   [Git](https://git-scm.com/)
 *   [Docker y Docker Desktop](https://www.docker.com/products/docker-desktop/) (que incluye Docker Compose)
-*   Se utilizo La version 24 de node y la version 11
+*   Se utilizo La version 24 de node, la version 11 de npm y python 3.11
 
 ### Pasos de Instalación
 
 **1. Clonar el repositorio:**
 ```
 git clone https://github.com/JavierBor/MiracleWebAvanzada.git
-cd ProyectoWeb
+cd MiracleWebAvanzada
 ```
 
 **2. Configuración de Variables de Entorno:**
