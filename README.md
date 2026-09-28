@@ -97,3 +97,266 @@ Cada vez que se realiza un push a la rama principal, el pipeline ejecuta automá
 * Despliegue automatizado en el ambiente de Staging.
 * Enlace al ambiente de staging:
 * Enlace al prototipo (Figma): https://www.figma.com/design/l8kGBlot0CO8z5RRXilRMD/MiracleWebAvanzada?node-id=0-1&t=oa9UOCwP1wDBTcsW-1
+
+# Entrega parcial 1 Miracle
+
+## Documentación de arquitectura
+
+### Diagrama de contexto.
+
+```mermaid
+flowchart LR
+
+    EST["Estudiante"]
+    SIS(("Sistema<br/>Miracle"))
+    PROF["Profesor/Admin"]
+
+    EST -->|"Resuelve ejercicios"| SIS
+    EST -->|"Consulta foros"| SIS
+    SIS -->|"Recibe retroalimentación"| EST
+
+    PROF -->|"Monitorea el foro"| SIS
+    SIS -->|"Recibe preguntas"| PROF
+    PROF -->|"Restringir usuarios"| SIS
+    PROF -->|"Enviar alertas"| SIS
+```
+
+### Diagrama de contenedores.
+
+```mermaid
+flowchart TB
+
+    USER["Usuario"]
+
+    subgraph SYSTEM["Sistema Miracle"]
+
+        FRONT["Frontend Multiplataforma<br/>
+        Ionic + Angular + Capacitor + Nginx<br/>
+        Puerto: 8100<br/><br/>
+        Rol: Proporciona la interfaz de usuario<br/>
+        web y móvil adaptada, navegación por rutas,<br/>
+        vistas de cursos, autenticación<br/>
+        y módulos interactivos."]
+
+        BACK["Backend Principal<br/>
+        NestJS + Node.js + TypeScript<br/>
+        Puerto: 3000<br/><br/>
+        Rol: Orquesta la lógica del negocio,<br/>
+        gestiona autenticación/autorización JWT,<br/>
+        valida entradas con DTOs, expone la API REST<br/>
+        principal y el endpoint de salud /health."]
+
+        MICRO["Microservicio Especializado<br/>
+        Python + FastAPI + Uvicorn<br/>
+        Puerto: 8000<br/><br/>
+        Rol: Procesa solicitudes internas<br/>
+        delegadas por NestJS, analiza patrones<br/>
+        de error y expone endpoints funcionales<br/>
+        con verificación de salud /health."]
+
+        DB[("Base de Datos Relacional<br/>
+        PostgreSQL 15<br/>
+        Puerto: 5432<br/><br/>
+        Rol: Persistencia transaccional de usuarios,<br/>
+        interacciones, catálogo de actividades<br/>
+        y publicaciones del foro.")]
+    end
+
+    USER -->|"HTTPS"| FRONT
+
+    FRONT -->|"API REST / JSON"| BACK
+
+    BACK -->|"API REST interna"| MICRO
+
+    BACK -->|"Prisma ORM"| DB
+```
+
+### Diagrama de Despliegue Preliminar.
+
+```mermaid
+flowchart LR
+
+    %% =========================
+    %% PIPELINE DEVSECOPS
+    %% =========================
+    subgraph GH["Pipeline DevSecOps - GitHub Actions"]
+
+        J1["Job 1: CI y Seguridad<br/><br/>
+        - Angular Frontend<br/>
+        - NestJS Backend<br/>
+        - Python Microservice<br/>
+        - Lint y Tests<br/>
+        - TruffleHog<br/>
+        - Docker Compose Build"]
+
+        J2["Job 2: Validación IaC<br/><br/>
+        Terraform init<br/>
+        Terraform fmt<br/>
+        Terraform validate<br/>
+        Terraform plan"]
+
+        J3["Job 3: CD Staging<br/><br/>
+        Despliegue continuo<br/>
+        mediante Deploy Hook"]
+
+        J1 --> J3
+        J2 --> J3
+    end
+
+    %% =========================
+    %% STAGING
+    %% =========================
+    J3 -->|"POST RENDER_DEPLOY_HOOK_URL"| RENDER["Render<br/>Ambiente Staging"]
+
+    %% =========================
+    %% ARQUITECTURA DE LA APP
+    %% =========================
+    subgraph NET["Red Virtual: miracle_network"]
+
+        FRONT["Contenedor<br/>angular_frontend"]
+        BACK["Contenedor<br/>nestjs_backend"]
+        PY["Contenedor<br/>python_microservice"]
+        DB[("Contenedor<br/>postgres_db")]
+
+        FRONT --> BACK
+        BACK --> PY
+        BACK --> DB
+    end
+
+    RENDER --> FRONT
+```
+
+### Modelo inicial de base de datos.
+
+```mermaid
+erDiagram
+
+    USUARIO {
+        int ID PK
+        string correo UK
+        string contrasena_hash
+        string rol
+        string estado
+    }
+
+    JUEGO {
+        int ID PK
+        string nivel
+        string categoria
+        string nombre
+    }
+
+    INTERACCION_ESTUDIANTE {
+        int ID PK
+        int usuarioId FK
+        int juegoId FK
+        int puntaje
+        int errores_comunes
+        datetime fecha
+    }
+
+    PUBLICACION_FORO {
+        int ID PK
+        int usuarioId FK
+        string contenido
+        string estado
+        datetime fecha_creacion
+    }
+
+    RESTRICCION {
+        int ID PK
+        int usuarioID FK
+        datetime fecha_inicio
+        datetime fecha_fin
+        string nota_admin
+    }
+
+    USUARIO ||--o{ PUBLICACION_FORO : realiza
+    USUARIO ||--o{ RESTRICCION : recibe
+    USUARIO ||--o{ INTERACCION_ESTUDIANTE : registra
+    JUEGO ||--o{ INTERACCION_ESTUDIANTE : genera
+```
+
+### Descripción del flujo entre frontend, NestJS, Python y PostgreSQL.
+
+```mermaid
+sequenceDiagram
+    autonumber
+
+    actor U as Usuario
+    participant F as Frontend<br/>Ionic + Angular
+    participant N as Backend<br/>NestJS
+    participant DB as PostgreSQL<br/>Prisma ORM
+    participant P as Microservicio<br/>Python + FastAPI
+
+    U->>F: Interactúa con formulario o actividad
+
+    F->>N: POST / GET<br/>HTTP + JSON
+
+    Note over F,N: El frontend solo conoce<br/>la API principal de NestJS
+
+    N->>N: ValidationPipe + DTOs<br/>Validación de datos
+
+    N->>N: Autenticación JWT<br/>Roles y reglas de negocio
+
+    N->>DB: Consulta mediante PrismaService<br/>Usuario, estado, restricciones, etc.
+    DB-->>N: Datos persistidos
+
+    alt Requiere procesamiento especializado
+
+        N->>P: HTTP interno<br/>PYTHON_SERVICE_URL:8000
+
+        Note over N,P: Comunicación interna<br/>con timeout
+
+        P->>P: Analiza respuestas<br/>y patrones de error
+
+        P->>P: Genera retroalimentación<br/>pedagógica
+
+        P-->>N: Resultado estructurado
+
+    else FastAPI no responde
+
+        P--xN: Timeout / error de servicio
+        N->>N: Captura la excepción<br/>y aplica degradación controlada
+
+    end
+
+    N->>DB: Guarda InteraccionEstudiante<br/>puntaje + errores_comunes
+    DB-->>N: Persistencia confirmada
+
+    N-->>F: 200 OK / 201 Created<br/>JSON procesado
+
+    F->>F: Actualiza estado y componentes Ionic
+    F-->>U: Muestra resultado y retroalimentación
+```
+
+### Registro inicial de decisiones arquitectónicas.
+
+Este registro documenta las decisiones técnicas fundamentales tomadas para el diseño y desarrollo de Miracle, asegurando el cumplimiento de los requerimientos funcionales y no funcionales del proyecto.
+
+#### Elección del Stack Frontend Multiplataforma
+
+* **Contexto:** Se requiere que la aplicación sea accesible vía navegador web, PWA y aplicación nativa Android, manteniendo una única base de código.
+
+* **Decisión:** Se utilizará **Angular** como framework principal, integrado con **Ionic** para los componentes de interfaz y **Capacitor** como puente de integración móvil.
+
+
+#### Separación del Backend en Servicios Especializados (NestJS + FastAPI)
+
+* **Contexto:** El sistema debe manejar lógica de negocio tradicional (usuarios, seguridad, foro) e implementar una capacidad adaptativa basada en el procesamiento de información externa.
+
+* **Decisión:** Se adopta una arquitectura de servicios dividida. **NestJS (Node.js)** actuará como la API REST principal y barrera de seguridad (autenticación y autorización). Las tareas complejas de procesamiento de lenguaje, obtención de datos web y evaluación inteligente se delegan a un microservicio en **Python con FastAPI**.
+
+
+#### Persistencia Relacional y Mapeo Objeto-Relacional (ORM)
+
+* **Contexto:** Los datos del sistema (usuarios, restricciones, interacciones, foros) poseen un alto grado de relación y requieren validaciones estrictas de integridad.
+
+* **Decisión:** Se implementará **PostgreSQL** como motor de base de datos principal, interactuando con él mediante **Prisma ORM**.
+
+
+#### ADR-004: Contenerización y Orquestación Local
+
+* **Contexto:** Es necesario garantizar que la arquitectura funcione de manera idéntica y aislada en los equipos de todos los desarrolladores y en el entorno final de despliegue.
+
+* **Decisión:** Se contenerizará cada componente de la arquitectura (Frontend, NestJS, FastAPI, PostgreSQL) en imágenes **Docker** independientes, orquestadas localmente mediante **Docker Compose**.
