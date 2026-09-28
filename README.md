@@ -72,7 +72,7 @@ El proyecto requiere variables de entorno para funcionar correctamente.
 * En la raíz del proyecto (y/o en las carpetas de los servicios), encontrarás un archivo llamado .env.example.
 * Crea una copia de este archivo, renómbralo a .env y completa los valores necesarios (por ejemplo, credenciales básicas de desarrollo para PostgreSQL). (Nota: Nunca subas el archivo .env real al repositorio).
 
-3. Ejecución con Docker Compose:
+**3. Ejecución con Docker Compose:**
 Para construir las imágenes y levantar todos los servicios (Frontend, NestJS, FastAPI y PostgreSQL), ejecuta el siguiente comando en la raíz del proyecto:
 ```
 docker-compose up --build
