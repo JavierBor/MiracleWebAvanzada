@@ -19,7 +19,7 @@ Diseñar, implementar y desplegar una aplicación web multiplataforma que ayude 
 *   La aplicación incluirá dinámicas estilo "Kahoot" (selección de alternativas) y dinámicas de escritura libre para evaluar ortografía y gramática.
 *   La solución será accesible a través de navegador web, Aplicación Web Progresiva (PWA) y aplicación Android.
 
-## 2. Identificación del Equipo (PUEDE CAMBIAR)
+## 2. Identificación del Equipo
 *   **Diego Álvarez Garrido:** Desarrollo prototipos
 *   **Javier Bórquez Diaz:** Desarrollo frontend
 *   **Gabriel Reyes Muñoz:** Implementación backend
@@ -49,7 +49,7 @@ Para enriquecer la experiencia de aprendizaje, el sistema consumirá informació
 
 La aplicación analizará el desempeño continuo del estudiante para personalizar su aprendizaje. A través del servicio en Python, el sistema evaluará los resultados de los juegos interactivos. Si detecta un patrón de errores frecuentes en un área particular (por ejemplo, dificultad con ciertos tiempos verbales en una unidad), el mecanismo adaptativo priorizará y generará automáticamente ejercicios de refuerzo enfocados en esos errores específicos, evitando que el alumno avance con vacíos de conocimiento.
 
-## 7. Instrucciones de Instalación y Ejecución (NO ESTOY SEGURO DE ESTO)
+## 7. Instrucciones de Instalación y Ejecución
 
 El proyecto está contenerizado para garantizar una fácil instalación y un entorno de desarrollo reproducible.
 
@@ -57,6 +57,7 @@ El proyecto está contenerizado para garantizar una fácil instalación y un ent
 Para ejecutar este proyecto localmente, necesitas tener instalado:
 *   [Git](https://git-scm.com/)
 *   [Docker y Docker Desktop](https://www.docker.com/products/docker-desktop/) (que incluye Docker Compose)
+*   Se utilizo La version 24 de node y la version 11
 
 ### Pasos de Instalación
 
