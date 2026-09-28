@@ -361,3 +361,29 @@ Este registro documenta las decisiones técnicas fundamentales tomadas para el d
 * **Contexto:** Es necesario garantizar que la arquitectura funcione de manera idéntica y aislada en los equipos de todos los desarrolladores y en el entorno final de despliegue.
 
 * **Decisión:** Se contenerizará cada componente de la arquitectura (Frontend, NestJS, FastAPI, PostgreSQL) en imágenes **Docker** independientes, orquestadas localmente mediante **Docker Compose**.
+
+## Variables de Entorno Requeridas
+
+El proyecto utiliza variables de entorno para configurar la comunicación entre los servicios y las credenciales de desarrollo.
+
+#### Backend NestJS
+
+| Variable | Descripción | Ejemplo |
+|---|---|---|
+| `DATABASE_URL` | Cadena de conexión utilizada por Prisma para acceder a PostgreSQL. | `postgresql://usuario:password@postgres-db:5432/miracle` |
+| `JWT_SECRET` | Clave utilizada para firmar y validar tokens JWT. | `clave_desarrollo` |
+| `PYTHON_SERVICE_URL` | Dirección interna del microservicio FastAPI. | `http://python-service:8000` |
+
+#### PostgreSQL
+
+| Variable | Descripción | Ejemplo |
+|---|---|---|
+| `POSTGRES_USER` | Usuario de PostgreSQL. | `miracle` |
+| `POSTGRES_PASSWORD` | Contraseña de PostgreSQL. | `miracle_password` |
+| `POSTGRES_DB` | Nombre de la base de datos principal. | `miracle_db` |
+
+#### GitHub Actions / Staging
+
+| Variable / Secret | Descripción |
+|---|---|
+| `RENDER_DEPLOY_HOOK_URL` | Secret de GitHub Actions que contiene el Deploy Hook utilizado para activar el despliegue del ambiente de staging en Render. |
