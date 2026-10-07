@@ -1,8 +1,9 @@
 import asyncio
-import httpx
 from typing import List, Optional
-from pydantic import BaseModel
+
+import httpx
 from fastapi import HTTPException
+from pydantic import BaseModel
 
 
 class DefinicionLimpia(BaseModel):
@@ -31,13 +32,13 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
         connect=10.0,
         read=30.0,
         write=10.0,
-        pool=10.0
+        pool=10.0,
     )
 
     async with httpx.AsyncClient(
         timeout=timeout,
         follow_redirects=True,
-        headers=CUSTOM_HEADERS
+        headers=CUSTOM_HEADERS,
     ) as client:
 
         response = None
@@ -61,7 +62,10 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
                 if intento == 2:
                     raise HTTPException(
                         status_code=504,
-                        detail="La fuente externa tardó demasiado en responder"
+                        detail=(
+                            "La fuente externa tardó demasiado "
+                            "en responder"
+                        ),
                     )
 
                 await asyncio.sleep(2 ** intento)
@@ -70,7 +74,10 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
                 if intento == 2:
                     raise HTTPException(
                         status_code=504,
-                        detail="No fue posible establecer conexión con la fuente externa a tiempo"
+                        detail=(
+                            "No fue posible establecer conexión "
+                            "con la fuente externa a tiempo"
+                        ),
                     )
 
                 await asyncio.sleep(2 ** intento)
@@ -79,7 +86,11 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
                 if intento == 2:
                     raise HTTPException(
                         status_code=503,
-                        detail=f"No fue posible conectar con la fuente externa: {type(exc).__name__}"
+                        detail=(
+                            "No fue posible conectar con la "
+                            "fuente externa: "
+                            f"{type(exc).__name__}"
+                        ),
                     )
 
                 await asyncio.sleep(2 ** intento)
@@ -87,25 +98,38 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
         if response is None:
             raise HTTPException(
                 status_code=503,
-                detail="No fue posible obtener respuesta de la fuente externa"
+                detail=(
+                    "No fue posible obtener respuesta de "
+                    "la fuente externa"
+                ),
             )
 
         if response.status_code == 404:
             raise HTTPException(
                 status_code=404,
-                detail=f"La palabra '{palabra_limpia}' no fue encontrada"
+                detail=(
+                    f"La palabra '{palabra_limpia}' "
+                    "no fue encontrada"
+                ),
             )
 
         if response.status_code >= 500:
             raise HTTPException(
                 status_code=503,
-                detail=f"La fuente externa no está disponible temporalmente (HTTP {response.status_code})"
+                detail=(
+                    "La fuente externa no está disponible "
+                    "temporalmente "
+                    f"(HTTP {response.status_code})"
+                ),
             )
 
         if response.status_code != 200:
             raise HTTPException(
                 status_code=502,
-                detail=f"Respuesta inesperada de la fuente externa (HTTP {response.status_code})"
+                detail=(
+                    "Respuesta inesperada de la fuente externa "
+                    f"(HTTP {response.status_code})"
+                ),
             )
 
         try:
@@ -113,13 +137,19 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
         except ValueError:
             raise HTTPException(
                 status_code=502,
-                detail="La fuente externa devolvió una respuesta JSON inválida"
+                detail=(
+                    "La fuente externa devolvió una respuesta "
+                    "JSON inválida"
+                ),
             )
 
         if not data:
             raise HTTPException(
                 status_code=502,
-                detail="La fuente externa devolvió una respuesta vacía"
+                detail=(
+                    "La fuente externa devolvió una "
+                    "respuesta vacía"
+                ),
             )
 
         item = data[0]
@@ -146,12 +176,12 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
             audio_url=audio,
             categoria_gramatical=primer_meaning.get(
                 "partOfSpeech",
-                "general"
+                "general",
             ),
             definicion=primera_def.get(
                 "definition",
-                "Sin definición disponible"
+                "Sin definición disponible",
             ),
             ejemplo=primera_def.get("example"),
-            sinonimos=primera_def.get("synonyms", [])
+            sinonimos=primera_def.get("synonyms", []),
         )
