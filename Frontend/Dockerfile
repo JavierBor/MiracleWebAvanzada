@@ -1,18 +1,29 @@
-# Etapa 1: Construcción (Node.js)
-FROM node:22-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-# Compila el proyecto Angular automáticamente por ti
-RUN npm run build 
+# Etapa 1: Compilar Angular / Ionic
+FROM node:24-alpine AS build
 
-# Etapa 2: Producción (Nginx)
-# Servidor Web Nginx ligero
+WORKDIR /app
+
+# Copiar dependencias
+COPY package*.json ./
+
+# Instalación reproducible
+RUN npm ci
+
+# Copiar código fuente
+COPY . .
+
+# Compilar aplicación
+RUN npm run build -- --configuration=production
+
+# Etapa 2: Servidor Nginx
 FROM nginx:alpine
-# Copiamos la configuración con soporte para el router de Angular
+
+# Configuración SPA
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-# Copiamos la carpeta compilada (ajusta con /browser si tu Angular compila en browser)
-COPY dist/Frontend/browser /usr/share/nginx/html
+
+# Copiar compilación desde la primera etapa
+COPY --from=build /app/dist/Frontend/browser /usr/share/nginx/html
+
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]
