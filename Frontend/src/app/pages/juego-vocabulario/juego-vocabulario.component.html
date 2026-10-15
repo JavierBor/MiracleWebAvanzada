@@ -1,0 +1,83 @@
+<ion-header class="ion-no-border">
+  <app-header [showHistoryBack]="true" badge="ING-1"></app-header>
+</ion-header>
+
+<ion-content class="miracle-bg">
+  <div class="main-wrapper">
+
+    <div class="back-link-box">
+      <a routerLink="/dashboard" class="back-link">
+        <ion-icon name="arrow-back-outline"></ion-icon> Volver al Menú
+      </a>
+    </div>
+
+    <!-- Estado de Carga -->
+    <div *ngIf="cargando" class="loading-box">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Cargando desafío lingüístico desde MIRACLE...</p>
+    </div>
+
+    <!-- Mensaje de Error -->
+    <div *ngIf="errorMsg" class="error-banner">
+      {{ errorMsg }}
+      <button (click)="cargarNuevaRonda()" class="btn-retry">Reintentar</button>
+    </div>
+
+    <!-- Tarjeta del Desafío -->
+    <div *ngIf="!cargando && desafio" class="game-card">
+      
+      <div class="badge-category">
+        {{ desafio.categoria | uppercase }}
+      </div>
+
+      <h2 class="game-title">¿Cuál es la palabra en inglés?</h2>
+
+      <!-- Definición en Español obtenida de la API y persistida en PostgreSQL -->
+      <div class="definition-box">
+        <p class="definition-text">"{{ desafio.definicion }}"</p>
+      </div>
+
+      <!-- Pista Fonética y Pronunciación -->
+      <div class="clue-box" *ngIf="desafio.pista_fonetica">
+        <span class="phonetic-label">Fonética:</span>
+        <span class="phonetic-text">/{{ desafio.pista_fonetica }}/</span>
+        <button class="btn-audio" (click)="reproducirAudio()">
+          <ion-icon name="volume-medium-outline"></ion-icon> Escuchar
+        </button>
+      </div>
+
+      <!-- Botones de Opciones Estilo Kahoot -->
+      <div class="options-grid">
+        <button *ngFor="let opc of desafio.opciones"
+          (click)="verificarRespuesta(opc)"
+          [disabled]="opcionSeleccionada !== null"
+          [ngClass]="{
+            'btn-option': true,
+            'option-selected': opcionSeleccionada === opc,
+            'option-correct': opcionSeleccionada !== null && opc === desafio.palabra_correcta,
+            'option-wrong': opcionSeleccionada === opc && opc !== desafio.palabra_correcta
+          }">
+          {{ opc }}
+        </button>
+      </div>
+
+      <!-- Feedback de Respuesta -->
+      <div *ngIf="opcionSeleccionada !== null" class="feedback-container">
+        <div *ngIf="esCorrecto" class="feedback-correct">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          <span>¡Correcto! +10 puntos</span>
+        </div>
+        <div *ngIf="!esCorrecto" class="feedback-wrong">
+          <ion-icon name="close-circle-outline"></ion-icon>
+          <span>Incorrecto. La palabra correcta era: <strong>{{ desafio.palabra_correcta }}</strong></span>
+        </div>
+
+        <button class="btn-next" (click)="cargarNuevaRonda()">
+          <ion-icon name="refresh-outline"></ion-icon> Siguiente palabra
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</ion-content>

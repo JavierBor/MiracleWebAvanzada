@@ -1,0 +1,225 @@
+.miracle-navbar {
+  background-color: #7800b8;
+  padding: 12px 24px;
+  color: white;
+
+  .navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    .brand-title {
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+
+    .score-text {
+      font-size: 16px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+  }
+}
+
+.miracle-bg {
+  --background: #f4f5f8;
+}
+
+.main-wrapper {
+  max-width: 750px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.back-link-box {
+  width: 100%;
+  margin-bottom: 16px;
+
+  .back-link {
+    color: #7800b8;
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.game-card {
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.badge-category {
+  background: #f0e6f7;
+  color: #7800b8;
+  padding: 4px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.game-title {
+  color: #2c3e50;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 0 16px 0;
+}
+
+.definition-box {
+  background: #fbfbfd;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  width: 100%;
+
+  .definition-text {
+    color: #4a5568;
+    font-size: 18px;
+    font-style: italic;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+.clue-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+
+  .phonetic-label {
+    font-size: 14px;
+    color: #718096;
+  }
+
+  .phonetic-text {
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: bold;
+    color: #2b6cb0;
+  }
+
+  .btn-audio {
+    background: #edf2f7;
+    color: #4a5568;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #e2e8f0;
+    }
+  }
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.btn-option {
+  background: #ffffff;
+  border: 2px solid #cbd5e0;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    border-color: #7800b8;
+    background: #faf5ff;
+    transform: translateY(-2px);
+  }
+
+  &.option-correct {
+    background: #c6f6d5 !important;
+    border-color: #38a169 !important;
+    color: #22543d !important;
+  }
+
+  &.option-wrong {
+    background: #fed7d7 !important;
+    border-color: #e53e3e !important;
+    color: #742a2a !important;
+  }
+}
+
+.feedback-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  animation: fadeIn 0.3s ease-in-out;
+
+  .feedback-correct {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2f855a;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .feedback-wrong {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #c53030;
+    font-size: 16px;
+  }
+
+  .btn-next {
+    background: #7800b8;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+      background: #620096;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

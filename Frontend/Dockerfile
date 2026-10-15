@@ -8,8 +8,11 @@ COPY . .
 RUN npm run build 
 
 # Etapa 2: Producción (Nginx)
+# Servidor Web Nginx ligero
 FROM nginx:alpine
-# Copia el resultado desde la Etapa 1
-COPY --from=builder /app/dist/Frontend/browser /usr/share/nginx/html
+# Copiamos la configuración con soporte para el router de Angular
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copiamos la carpeta compilada (ajusta con /browser si tu Angular compila en browser)
+COPY dist/Frontend/browser /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

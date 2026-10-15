@@ -78,3 +78,16 @@ enum EstadoPublicacion {
   REPORTADA
   OCULTA
 }
+
+model Vocabulario {
+  id                   String   @id @default(uuid())
+  palabra              String   @unique
+  fonetica             String?
+  audio_url            String?
+  categoria_gramatical String
+  definicion           String   // Definición traducida al español
+  definicion_en        String?  // Definición original en inglés
+  fuente               String   @default("Datamuse API")
+  fecha_creacion       DateTime @default(now())
+  ultima_actualizacion DateTime @updatedAt
+}

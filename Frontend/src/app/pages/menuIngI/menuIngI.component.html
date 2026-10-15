@@ -1,6 +1,7 @@
 <ion-header class="ion-no-border">
   <app-header [showHistoryBack]="true" badge="ING-1"></app-header>
 </ion-header>
+
 <ion-content class="miracle-bg">
   <div class="main-container">
     
@@ -10,22 +11,22 @@
       <p class="section-subtitle">Practica tu vocabulario, gramática y agilidad mental mientras te diviertes.</p>
     </div>
 
-    <!-- Grilla de 3 Tarjetas -->
+    <!-- Grilla de Tarjetas -->
     <div class="games-grid">
 
-      <!-- Juego 1: The Food Basket -->
+      <!-- Juego 1: Desafío de Vocabulario (Conectado a Datamuse + FastAPI + NestJS) -->
       <div class="game-card">
         <div class="card-top">
           <div class="category-pill">
-            <span class="pill-emoji">🧺</span>
-            <span class="pill-text">VOCABULARIO</span>
+            <span class="pill-emoji">📖</span>
+            <span class="pill-text">VOCABULARIO DINÁMICO</span>
           </div>
-          <h2 class="game-title">The Food Basket</h2>
+          <h2 class="game-title">Vocabulary Challenge</h2>
           <p class="game-description">
-            Verás aparecer distintos alimentos en pantalla y tu misión es decidir rápidamente si se pueden contar por unidad o no, presionando "Countable" o "Uncountable". Tienes 60 segundos en el reloj: cada acierto te da tiempo extra, pero cada error te resta segundos. ¡Demuestra tu rapidez y sobrevive el mayor tiempo posible!
+            Pondrás a prueba tu comprensión auditiva y lectura. Escucha la pronunciación en inglés o lee la definición contextual en español obtenida dinámicamente y selecciona la palabra correcta entre las alternativas antes de que se acabe el tiempo.
           </p>
         </div>
-        <button type="button" class="btn-play" (click)="irAJuego('/the-food-basket')">
+        <button type="button" class="btn-play" (click)="irAJuego('/juego-vocabulario')">
           <span>Jugar</span>
           <ion-icon name="play-circle-outline" class="play-icon"></ion-icon>
         </button>

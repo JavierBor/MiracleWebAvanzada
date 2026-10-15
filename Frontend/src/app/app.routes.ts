@@ -55,10 +55,18 @@ export const routes: Routes = [
   },
   
   {
-      path: 'admin',
-      component: AdminMenuComponent
-    },
+    path: 'admin',
+    component: AdminMenuComponent
+  },
   { path: 'admin/alertas', component: AdminAlertasComponent },
   { path: 'admin/usuarios', component: AdminBaneoComponent },
+
+  {
+    path: 'juego-vocabulario',
+    loadComponent: () =>
+      import('./pages/juego-vocabulario/juego-vocabulario.component').then(
+        (m) => m.JuegoVocabularioComponent
+      ),
+  },
 
 ];
