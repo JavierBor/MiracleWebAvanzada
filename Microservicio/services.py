@@ -4,16 +4,18 @@ from pydantic import BaseModel
 from fastapi import HTTPException
 from deep_translator import MyMemoryTranslator
 
+
 # Esquema de datos para NestJS
 class DefinicionLimpia(BaseModel):
     palabra: str
     fonetica: Optional[str] = None
     audio_url: Optional[str] = None
     categoria_gramatical: str
-    definicion: str                      # Definición traducida al español
-    definicion_en: Optional[str] = None        # Definición original en inglés
+    definicion: str
+    definicion_en: Optional[str] = None
     ejemplo: Optional[str] = None
     sinonimos: List[str] = []
+
 
 DATAMUSE_URL = "https://api.datamuse.com/words"
 
@@ -31,15 +33,16 @@ MAPA_CATEGORIAS = {
     "u": "interjección"
 }
 
+
 async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
     palabra_limpia = palabra.strip().lower()
-    
+
     params = {
         "sp": palabra_limpia,
         "md": "dpr",
         "max": "1"
     }
-    
+
     # 1. Consulta asíncrona a Datamuse API
     async with httpx.AsyncClient(timeout=8.0, headers=HEADERS) as client:
         try:
@@ -47,34 +50,41 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
         except httpx.ReadTimeout:
             raise HTTPException(
                 status_code=504,
-                detail="La fuente externa Datamuse tardó demasiado en responder"
+                detail="La fuente Datamuse tardó demasiado en responder"
             )
         except httpx.RequestError as exc:
+            msg = f"Error al conectar con la API externa: {type(exc).__name__}"
             raise HTTPException(
                 status_code=503,
-                detail=f"Error al conectar con la API externa: {type(exc).__name__}"
+                detail=msg
             )
 
         if response.status_code != 200:
             raise HTTPException(
                 status_code=502,
-                detail=f"Error devuelto por la fuente externa (HTTP {response.status_code})"
+                detail=(
+                    f"Error devuelto por la fuente externa "
+                    f"(HTTP {response.status_code})"
+                )
             )
 
         data = response.json()
         if not data:
             raise HTTPException(
                 status_code=404,
-                detail=f"La palabra '{palabra_limpia}' no fue encontrada en la fuente externa"
+                detail=(
+                    f"La palabra '{palabra_limpia}' no fue encontrada "
+                    f"en la fuente externa"
+                )
             )
 
         item = data[0]
         defs = item.get("defs", [])
-        
+
         # 2. Extracción y separación de categoría y definición
         categoria = "general"
         definicion_original = "No definition available"
-        
+
         if defs:
             primera_def = defs[0]
             if "\t" in primera_def:
@@ -86,7 +96,9 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
 
         # 3. Traducción al español con MyMemory
         try:
-            definicion_espanol = MyMemoryTranslator(source='en-US', target='es-ES').translate(definicion_original)
+            definicion_espanol = MyMemoryTranslator(
+                source="en-US", target="es-ES"
+            ).translate(definicion_original)
         except Exception:
             definicion_espanol = definicion_original
 
