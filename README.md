@@ -1,7 +1,7 @@
 # Miracle
 
 **Descripción breve:** Miracle consiste en una aplicación web interactiva y multiplataforma diseñada para apoyar el proceso de aprendizaje de inglés de los estudiantes de la PUCV mediante ejercicios lúdicos y adaptativos.
-
+docker-compose up --builddocker-compose up --build
 ## 1. Definición del Proyecto
 
 ### Problema o necesidad abordada
@@ -387,3 +387,18 @@ El proyecto utiliza variables de entorno para configurar la comunicación entre 
 | Variable / Secret | Descripción |
 |---|---|
 | `RENDER_DEPLOY_HOOK_URL` | Secret de GitHub Actions que contiene el Deploy Hook utilizado para activar el despliegue del ambiente de staging en Render. |
+
+# Entrega parcial 2 Miracle
+
+
+## Estrategia de Gestión de Datos de Vocabulario (EP2 - Punto 3)
+
+Para garantizar la calidad de los datos del juego de vocabulario y la estabilidad del sistema, se implementó un pipeline robusto de extracción, transformación y persistencia en el backend (NestJS + PostgreSQL):
+
+* **Extracción Automatizada:** El servicio se conecta a un microservicio en Python (vía FastAPI) que extrae definiciones, audios y fonética (A1 - Inglés I) desde fuentes externas (Datamuse/MyMemory).
+* **Validación y Limpieza:** Antes de procesar cualquier respuesta, se valida la integridad estructural de los datos recibidos (evitando registros corruptos o incompletos). Posteriormente, se limpian los strings con `.trim()` para eliminar espacios en blanco innecesarios.
+* **Normalización:** Las palabras clave se transforman a minúsculas (`toLowerCase()`) y se asignan valores por defecto robustos a campos faltantes (ej. `categoria_gramatical = 'unknown'`) para estandarizar la base de datos local.
+* **Deduplicación Activa:** Se implementó una "memoria" bidireccional. El frontend envía un historial de palabras ya jugadas (`usadas[]`), y el backend cruza tanto las palabras clave como sus *definiciones* en PostgreSQL. Si detecta un choque conceptual, extrae automáticamente una alternativa aleatoria desde la base de datos local, garantizando rondas 100% únicas.
+* **Trazabilidad:** Se incorporó el campo `fecha_recuperacion` en el esquema de Prisma para auditar el momento exacto de ingreso o actualización de cada registro en la base de datos.
+* **Manejo de Errores e Indisponibilidad:** Se configuró un límite estricto de tiempo (*Timeout* de 5 segundos) usando `AbortController`. Si el microservicio Python no responde a tiempo o devuelve errores (404, 502), el backend lanza excepciones HTTP controladas (como 504 Gateway Timeout), evitando bloqueos en cadena y caídas del servidor principal.
+* **Estrategia de Actualización (Caché y Upsert):** El sistema prioriza lecturas locales (Cache Hit). Sin embargo, verifica la "frescura" de los datos: si un registro no ha sido actualizado en los últimos 30 días, el backend lo marca como obsoleto, vuelve a consultar la API externa y aplica un comando `upsert` en Prisma para refrescar la información existente o crearla si no existía.

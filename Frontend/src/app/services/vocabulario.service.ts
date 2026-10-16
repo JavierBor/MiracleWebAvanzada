@@ -21,7 +21,12 @@ export class VocabularioService {
 
   constructor(private readonly http: HttpClient) {}
 
-  obtenerDesafio(palabra: string = 'student'): Observable<DesafioJuego> {
-    return this.http.get<DesafioJuego>(`${this.apiUrl}/desafio?palabra=${encodeURIComponent(palabra)}`);
+  obtenerDesafio(palabra: string, usadas: string[] = []) {
+    // Si hay palabras usadas, las unimos con comas, si no, lo dejamos vacío
+    const queryUsadas = usadas.length > 0 ? `&usadas=${usadas.join(',')}` : '';
+    
+    // Adjuntamos el parámetro a la URL
+    return this.http.get<DesafioJuego>(`${this.apiUrl}/desafio?palabra=${palabra}${queryUsadas}`);
   }
+ 
 }

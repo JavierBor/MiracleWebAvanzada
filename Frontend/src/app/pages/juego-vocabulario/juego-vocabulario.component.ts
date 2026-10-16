@@ -29,18 +29,30 @@ export class JuegoVocabularioComponent implements OnInit {
   esCorrecto: boolean | null = null;
   puntaje: number = 0;
 
-  palabrasDisponibles: string[] = ['student', 'library', 'teacher', 'computer', 'university', 'challenge'];
+  palabrasDisponibles: string[] = [
+    // Entorno universitario y estudio
+    'student', 'teacher', 'book', 'pen', 'desk', 'class', 'school', 'university', 'exam', 'paper',
+    // Familia y personas
+    'family', 'brother', 'sister', 'mother', 'father', 'friend', 'person', 'boy', 'girl',
+    // Objetos y lugares cotidianos
+    'house', 'room', 'door', 'window', 'table', 'chair', 'car', 'bus', 'city', 'country',
+    // Tiempo y rutinas
+    'morning', 'afternoon', 'night', 'day', 'week', 'month', 'year', 'time', 'today',
+    // Comida y animales
+    'water', 'food', 'apple', 'bread', 'coffee', 'dog', 'cat',
+    // Conceptos básicos
+    'work', 'job', 'money', 'name', 'number', 'color'
+  ];
+  // 1. Agregamos la "memoria" de la partida
+  palabrasUsadas: string[] = [];
 
-  // 2. Inyecta cdr: ChangeDetectorRef en el constructor
   constructor(
     private readonly vocabularioService: VocabularioService,
     private readonly cdr: ChangeDetectorRef
-  ) {
-    // ... addIcons(...) ...
-  }
+  ) {}
 
   ngOnInit() {
-    this.cargarNuevaRonda('student');
+    this.cargarNuevaRonda();
   }
 
   cargarNuevaRonda(palabra?: string) {
@@ -48,15 +60,21 @@ export class JuegoVocabularioComponent implements OnInit {
     this.errorMsg = '';
     this.opcionSeleccionada = null;
     this.esCorrecto = null;
-    this.cdr.markForCheck(); // Notificar inicio de carga
+    this.cdr.markForCheck(); 
 
     const palabraObjetivo = palabra || this.palabrasDisponibles[Math.floor(Math.random() * this.palabrasDisponibles.length)];
 
-    this.vocabularioService.obtenerDesafio(palabraObjetivo).subscribe({
+    // 2. Enviamos el historial al servicio
+    this.vocabularioService.obtenerDesafio(palabraObjetivo, this.palabrasUsadas).subscribe({
       next: (data) => {
         this.desafio = data;
         this.cargando = false;
-        // 3. Forzar inmediatamente la actualización de la interfaz
+        
+        // 3. Guardamos la palabra ganadora para que no vuelva a salir
+        if (!this.palabrasUsadas.includes(data.palabra_correcta)) {
+          this.palabrasUsadas.push(data.palabra_correcta);
+        }
+        
         this.cdr.detectChanges();
       },
       error: (err) => {

@@ -90,4 +90,5 @@ model Vocabulario {
   fuente               String   @default("Datamuse API")
   fecha_creacion       DateTime @default(now())
   ultima_actualizacion DateTime @updatedAt
+  fecha_recuperacion   DateTime @default(now())
 }
