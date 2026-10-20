@@ -1,11 +1,11 @@
 import httpx
+import asyncio
 from typing import List, Optional
 from pydantic import BaseModel
 from fastapi import HTTPException
 from deep_translator import MyMemoryTranslator
 
-
-# Esquema de datos para NestJS
+# Esquema de datos para NestJS (Contrato estricto)
 class DefinicionLimpia(BaseModel):
     palabra: str
     fonetica: Optional[str] = None
@@ -15,7 +15,6 @@ class DefinicionLimpia(BaseModel):
     definicion_en: Optional[str] = None
     ejemplo: Optional[str] = None
     sinonimos: List[str] = []
-
 
 DATAMUSE_URL = "https://api.datamuse.com/words"
 
@@ -33,6 +32,12 @@ MAPA_CATEGORIAS = {
     "u": "interjección"
 }
 
+# Función auxiliar para no bloquear el hilo asíncrono con el traductor
+def traducir_texto(texto: str) -> str:
+    try:
+        return MyMemoryTranslator(source="en-US", target="es-ES").translate(texto)
+    except Exception:
+        return texto
 
 async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
     palabra_limpia = palabra.strip().lower()
@@ -43,8 +48,8 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
         "max": "1"
     }
 
-    # 1. Consulta asíncrona a Datamuse API
-    async with httpx.AsyncClient(timeout=8.0, headers=HEADERS) as client:
+    # 1. Consulta asíncrona a Datamuse API (Timeout ajustado a 3.5s para no chocar con NestJS)
+    async with httpx.AsyncClient(timeout=3.5, headers=HEADERS) as client:
         try:
             response = await client.get(DATAMUSE_URL, params=params)
         except httpx.ReadTimeout:
@@ -62,20 +67,14 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
         if response.status_code != 200:
             raise HTTPException(
                 status_code=502,
-                detail=(
-                    f"Error devuelto por la fuente externa "
-                    f"(HTTP {response.status_code})"
-                )
+                detail=f"Error devuelto por la fuente externa (HTTP {response.status_code})"
             )
 
         data = response.json()
         if not data:
             raise HTTPException(
                 status_code=404,
-                detail=(
-                    f"La palabra '{palabra_limpia}' no fue encontrada "
-                    f"en la fuente externa"
-                )
+                detail=f"La palabra '{palabra_limpia}' no fue encontrada en la fuente externa"
             )
 
         item = data[0]
@@ -94,13 +93,8 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
             else:
                 definicion_original = primera_def
 
-        # 3. Traducción al español con MyMemory
-        try:
-            definicion_espanol = MyMemoryTranslator(
-                source="en-US", target="es-ES"
-            ).translate(definicion_original)
-        except Exception:
-            definicion_espanol = definicion_original
+        # 3. Traducción al español (Ejecutada en un hilo separado para no bloquear FastAPI)
+        definicion_espanol = await asyncio.to_thread(traducir_texto, definicion_original)
 
         # 4. Extracción de fonética
         fonetica = None
@@ -109,6 +103,7 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
                 fonetica = tag.replace("pron:", "")
                 break
 
+        # Retornamos asegurando el cumplimiento del contrato Pydantic
         return DefinicionLimpia(
             palabra=item.get("word", palabra_limpia),
             fonetica=fonetica,
