@@ -6,6 +6,8 @@ from fastapi import HTTPException
 from deep_translator import MyMemoryTranslator
 
 # Esquema de datos para NestJS (Contrato estricto)
+
+
 class DefinicionLimpia(BaseModel):
     palabra: str
     fonetica: Optional[str] = None
@@ -15,6 +17,7 @@ class DefinicionLimpia(BaseModel):
     definicion_en: Optional[str] = None
     ejemplo: Optional[str] = None
     sinonimos: List[str] = []
+
 
 DATAMUSE_URL = "https://api.datamuse.com/words"
 
@@ -33,11 +36,14 @@ MAPA_CATEGORIAS = {
 }
 
 # Función auxiliar para no bloquear el hilo asíncrono con el traductor
+
+
 def traducir_texto(texto: str) -> str:
     try:
         return MyMemoryTranslator(source="en-US", target="es-ES").translate(texto)
     except Exception:
         return texto
+
 
 async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
     palabra_limpia = palabra.strip().lower()
