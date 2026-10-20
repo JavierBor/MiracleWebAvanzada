@@ -27,14 +27,6 @@ model Restriccion {
   usuario      Usuario  @relation(fields: [usuarioId], references: [id])
 }
 
-model Juego {
-  id            String                  @id @default(uuid())
-  nivel         NivelJuego
-  categoria     String
-  nombre        String
-  interacciones InteraccionEstudiante[]
-}
-
 model InteraccionEstudiante {
   id              String   @id @default(uuid())
   usuarioId       String
@@ -79,6 +71,17 @@ enum EstadoPublicacion {
   OCULTA
 }
 
+// --- MODELOS ACTUALIZADOS PARA EL PUNTO 5 ---
+
+model Juego {
+  id            String                  @id @default(uuid())
+  nivel         NivelJuego
+  categoria     String
+  nombre        String
+  interacciones InteraccionEstudiante[]
+  palabras      Vocabulario[]           
+}
+
 model Vocabulario {
   id                   String   @id @default(uuid())
   palabra              String   @unique
@@ -87,8 +90,13 @@ model Vocabulario {
   categoria_gramatical String
   definicion           String   // Definición traducida al español
   definicion_en        String?  // Definición original en inglés
-  fuente               String   @default("Datamuse API")
+  fuente               String   @default("Datamuse API + MyMemory")
   fecha_creacion       DateTime @default(now())
   ultima_actualizacion DateTime @updatedAt
   fecha_recuperacion   DateTime @default(now())
+  
+  juegos               Juego[]  
+
+  @@index([categoria_gramatical])
+  @@index([fecha_recuperacion])
 }
