@@ -22,7 +22,10 @@ def health_check():
     "/api/vocabulario/{palabra}",
     response_model=DefinicionLimpia,
     summary="Extrae y fusiona datos de vocabulario",
-    description="Consulta Datamuse y MyMemory para extraer fonética, audios y definiciones de una palabra, fusionándolas en un contrato estandarizado.",
+    description=(
+        "Consulta Datamuse y MyMemory para extraer fonética, audios y "
+        "definiciones de una palabra, fusionándolas en un contrato estandarizado."
+    ),
     responses={
         200: {
             "description": "Datos recuperados y procesados exitosamente."},
