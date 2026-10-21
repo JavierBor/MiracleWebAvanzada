@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, Path, HTTPException
 from services import DefinicionLimpia, obtener_datos_diccionario
 
@@ -45,7 +46,7 @@ async def consultar_palabra(
         title="Palabra a buscar",
         min_length=2,
         max_length=30,
-        pattern="^[a-zA-Z]+$",  # Solo letras, sin números ni símbolos
+        pattern="^[a-zA-Z]+$",
         description="La palabra debe contener únicamente letras del alfabeto inglés."
     )
 ):
@@ -53,50 +54,70 @@ async def consultar_palabra(
         resultado = await obtener_datos_diccionario(palabra)
 
         if not resultado:
-            raise HTTPException(status_code=404, detail=f"No se encontraron definiciones para '{palabra}'")
+            raise HTTPException(
+                status_code=404,
+                detail=f"No se encontraron definiciones para '{palabra}'"
+            )
 
         return resultado
 
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno procesando la palabra: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno procesando la palabra: {str(e)}"
+        )
 
 
 # --- NUEVO ENDPOINT: MOTOR DE BÚSQUEDA DEL FORO ---
 @app.post(
-    "/api/foro/buscar", 
+    "/api/foro/buscar",
     response_model=SearchResponse,
     summary="Motor de búsqueda inteligente para el foro",
-    description="Recibe una consulta y un corpus de publicaciones, y devuelve un ranking de relevancia usando algoritmos de Recuperación de Información (TF-IDF)."
+    description=(
+        "Recibe una consulta y un corpus de publicaciones, "
+        "y devuelve un ranking de relevancia usando algoritmos "
+        "de Recuperación de Información (TF-IDF)."
+    )
 )
 def search_forum(request: SearchRequest):
     start_time = time.time()
-    
+
     # 1. Extraer el corpus (solo el texto de las publicaciones)
     corpus = [doc.content for doc in request.documents]
-    
+
     # Si el foro está vacío, retornamos vacío
     if not corpus:
-        return SearchResponse(query=request.query, processing_time_ms=0, results=[])
+        return SearchResponse(
+            query=request.query,
+            processing_time_ms=0,
+            results=[]
+        )
 
     # 2. Tokenización, Normalización y creación del Índice TF-IDF
-    vectorizer = TfidfVectorizer(stop_words='english') 
-    
+    vectorizer = TfidfVectorizer(stop_words='english')
+
     try:
         tfidf_matrix = vectorizer.fit_transform(corpus)
         query_vec = vectorizer.transform([request.query])
     except ValueError:
         # Falla si todas las palabras de la query son stopwords
-        return SearchResponse(query=request.query, processing_time_ms=0, results=[])
+        return SearchResponse(
+            query=request.query,
+            processing_time_ms=0,
+            results=[]
+        )
 
     # 3. Criterio de Ranking: Similitud del Coseno
-    cosine_similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
+    cosine_similarities = cosine_similarity(
+        query_vec, tfidf_matrix
+    ).flatten()
 
     # 4. Recuperación de Resultados Relevantes
     results = []
     for idx, score in enumerate(cosine_similarities):
-        if score > 0.0:  
+        if score > 0.0:
             results.append(SearchResult(
                 id=request.documents[idx].id,
                 score=round(float(score), 4)
