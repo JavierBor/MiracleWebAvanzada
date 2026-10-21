@@ -30,7 +30,7 @@ export class ForoService {
       const response = await firstValueFrom(
         this.httpService.post(`${pythonUrl}/api/foro/buscar`, { query, documents }).pipe(
           timeout(5000), 
-          catchError((error) => {
+          catchError(() => {
             throw new GatewayTimeoutException('El motor de búsqueda (Python) no responde a tiempo.');
           })
         )
