@@ -1,5 +1,4 @@
 <ion-header class="ion-no-border">
-  
   <app-header [showHistoryBack]="true" badge="FORO"></app-header>
 </ion-header>
 
@@ -33,9 +32,15 @@
               type="text"
               placeholder="Buscar consultas..."
               [(ngModel)]="terminoBusqueda"
+              (keyup.enter)="buscarEnForo()"
               class="search-input"
             />
           </div>
+        </div>
+
+        <!-- METADATOS DE BÚSQUEDA (Requerimiento de la rúbrica) -->
+        <div class="search-metadata" *ngIf="metadatosBusqueda" style="margin-bottom: 15px; font-size: 0.9em; color: var(--ion-color-medium);">
+          Se encontraron {{ metadatosBusqueda.total_encontrados }} resultados en {{ metadatosBusqueda.tiempo_procesamiento_ms }} ms.
         </div>
 
         <!-- Tarjetas de Publicaciones -->
@@ -52,6 +57,12 @@
             <div class="badges-box">
               <span class="tag-course">{{ post.curso }}</span>
               <span class="tag-category">{{ post.categoria }}</span>
+              
+              <!-- SCORE DE RELEVANCIA -->
+              <span class="tag-score" *ngIf="post.score_relevancia" style="background: #e0f7fa; color: #006064; padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; margin-right: 5px;">
+                Relevancia: {{ post.score_relevancia * 100 | number:'1.0-1' }}%
+              </span>
+
               <button
                 type="button"
                 class="btn-delete-admin"

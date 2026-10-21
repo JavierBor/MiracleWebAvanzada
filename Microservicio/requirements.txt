@@ -3,3 +3,4 @@ uvicorn
 httpx
 pydantic
 deep-translator
+scikit-learn
