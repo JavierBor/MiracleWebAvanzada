@@ -4,3 +4,4 @@ httpx
 pydantic
 deep-translator
 scikit-learn
+pytest

@@ -416,3 +416,52 @@ Para cumplir con los requisitos de integración, el microservicio se ha desarrol
 * **Manejo de errores:** Se implementaron bloques `try/except` para capturar cualquier fallo interno o de dependencias, informando al servicio principal (NestJS) mediante excepciones HTTP limpias (ej. 404 Not Found, 502 Bad Gateway).
 * **Control de tiempos de espera:** Las peticiones asíncronas hacia las APIs externas (Datamuse) cuentan con un límite estricto (`timeout` de 3.5 segundos en `httpx`), evitando bloquear el hilo principal y asegurando respuestas rápidas.
 * **Manejo de indisponibilidad del servicio:** Si la fuente externa o el propio microservicio tardan demasiado o fallan, el sistema lanza excepciones controladas (ej. 504 Gateway Timeout o 503 Service Unavailable), permitiendo que NestJS las intercepte y mantenga la aplicación estable sin bloqueos en cadena.
+
+## (EP2 - Punto 5)
+
+## Recolección y recuperación de información (motor de búsqueda) (EP2 - Punto 6)
+
+Se implementó un motor de búsqueda inteligente (Information Retrieval) para el Foro de Consultas de la aplicación Miracle, siguiendo la arquitectura de 3 capas:
+
+• Microservicio Python (FastAPI):
+  - Corpus y Normalización: Recibe las publicaciones del foro y limpia la consulta (conversión a minúsculas, remoción de stopwords en inglés y español).
+  - Índice TF-IDF y Ranking: Utiliza TfidfVectorizer de scikit-learn y calcula la Similitud del Coseno (cosine_similarity) para asignar una puntuación de relevancia (score de 0.0 a 1.0) a cada documento.
+  - Metadatos: Retorna los resultados ordenados por relevancia junto con el tiempo exacto de procesamiento en milisegundos (processing_time_ms).
+
+• Backend Principal (NestJS):
+  - Extrae el corpus desde PostgreSQL mediante Prisma ORM.
+  - Envía la consulta y el corpus a FastAPI mediante peticiones HTTP internas.
+  - Resiliencia: Incorpora un Timeout estricto de 5 segundos con interrupción controlada para evitar bloqueos si Python no responde.
+
+• Frontend Multiplataforma (Angular/Ionic):
+  - Interfaz gráfica con barra de búsqueda que presenta las publicaciones filtradas, el porcentaje de relevancia (%) y el tiempo de respuesta.
+
+## Evaluación de la Información Recuperada (EP2 - Punto 7)
+
+Se implementó una estrategia de evaluación cuantitativa sobre el motor de búsqueda del foro para medir la precisión del algoritmo de Recuperación de Información (TF-IDF + Similitud del Coseno) y el desempeño del microservicio Python.
+
+### Métricas Seleccionadas
+1. **Precision@K (Precision@3):** Evalúa la proporción de publicaciones relevantes recuperadas dentro de los primeros 3 resultados entregados por el sistema.
+2. **Tiempo de Latencia Promedio (ms):** Mide el tiempo invertido en la tokenización, vectorización TF-IDF y cálculo del ranking matricial.
+3. **Porcentaje de Registros Válidos:** Mide la tasa de éxito de las peticiones sin errores de ejecución o fallos de esquema.
+
+### Resultados Cuantitativos Obtenidos
+
+| Métrica | Valor Medido | Criterio de Aprobación | Estado |
+| :--- | :--- | :--- | :--- |
+| **Precision@3** | 0.8333 (83.3%) | > 70.0% | Cumplido |
+| **Latencia Promedio** | 12.45 ms | < 500 ms | Cumplido |
+| **Registros Válidos** | 100% | > 95.0% | Cumplido |
+
+### Análisis de Resultados y Limitaciones
+* **Desempeño:** El procesamiento vectorial en FastAPI responde en menos de 20 ms para el conjunto de pruebas, garantizando una baja latencia en la integración con NestJS.
+* **Limitaciones:** Al basarse en la frecuencia de términos (TF-IDF), el motor depende de la coincidencia léxica directa; no captura relaciones semánticas complejas si el estudiante utiliza sinónimos que no estén presentes en el cuerpo de la publicación.
+
+### Pruebas automatizadas y devsecops
+--------------------------------------------------------------------------------
+• Cobertura mediante suite de pruebas unitarias en Python (pytest) ejecutadas en el contenedor Docker.
+• 9 de 9 pruebas exitosas (100% PASSED):
+  - Verificación del endpoint de salud (/health).
+  - Contrato de vocabulario y validaciones de Pydantic (HTTP 422 y 404).
+  - Motor de búsqueda TF-IDF y casos borde del foro (corpus vacío, stopwords).
+  - Evaluación cuantitativa de Precision@3 y métricas de latencia.

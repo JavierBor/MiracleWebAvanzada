@@ -1,11 +1,11 @@
-
 from fastapi import FastAPI, Path, HTTPException
-from services import DefinicionLimpia, obtener_datos_diccionario
-
-from models import SearchRequest, SearchResponse, SearchResult
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import time
+from services import (
+    DefinicionLimpia,
+    obtener_datos_diccionario,
+    search_forum_posts,
+    evaluate_search_engine
+)
+from models import SearchRequest, SearchResponse, ForumDocument
 
 app = FastAPI(
     title="MIRACLE - Microservicio Adaptativo",
@@ -23,7 +23,7 @@ def health_check():
     return {"status": "ok", "service": "python-microservice"}
 
 
-# Endpoint que consume la fuente web
+# --- VOCABULARIO Y DICCIONARIO EXTERNO (PUNTOS 2, 3 Y 4) ---
 @app.get(
     "/api/vocabulario/{palabra}",
     response_model=DefinicionLimpia,
@@ -70,7 +70,7 @@ async def consultar_palabra(
         )
 
 
-# --- NUEVO ENDPOINT: MOTOR DE BÚSQUEDA DEL FORO ---
+# --- PUNTO 6: MOTOR DE BÚSQUEDA DEL FORO ---
 @app.post(
     "/api/foro/buscar",
     response_model=SearchResponse,
@@ -82,55 +82,22 @@ async def consultar_palabra(
     )
 )
 def search_forum(request: SearchRequest):
-    start_time = time.time()
+    return search_forum_posts(request.query, request.documents)
 
-    # 1. Extraer el corpus (solo el texto de las publicaciones)
-    corpus = [doc.content for doc in request.documents]
 
-    # Si el foro está vacío, retornamos vacío
-    if not corpus:
-        return SearchResponse(
-            query=request.query,
-            processing_time_ms=0,
-            results=[]
-        )
-
-    # 2. Tokenización, Normalización y creación del Índice TF-IDF
-    vectorizer = TfidfVectorizer(stop_words='english')
-
-    try:
-        tfidf_matrix = vectorizer.fit_transform(corpus)
-        query_vec = vectorizer.transform([request.query])
-    except ValueError:
-        # Falla si todas las palabras de la query son stopwords
-        return SearchResponse(
-            query=request.query,
-            processing_time_ms=0,
-            results=[]
-        )
-
-    # 3. Criterio de Ranking: Similitud del Coseno
-    cosine_similarities = cosine_similarity(
-        query_vec, tfidf_matrix
-    ).flatten()
-
-    # 4. Recuperación de Resultados Relevantes
-    results = []
-    for idx, score in enumerate(cosine_similarities):
-        if score > 0.0:
-            results.append(SearchResult(
-                id=request.documents[idx].id,
-                score=round(float(score), 4)
-            ))
-
-    # 5. Ordenar de mayor a menor relevancia
-    results.sort(key=lambda x: x.score, reverse=True)
-
-    processing_time = (time.time() - start_time) * 1000
-
-    # 6. Retornar los metadatos exigidos por la rúbrica
-    return SearchResponse(
-        query=request.query,
-        processing_time_ms=round(processing_time, 2),
-        results=results
+# --- PUNTO 7: EVALUACIÓN CUANTITATIVA DE LA BÚSQUEDA ---
+@app.post(
+    "/api/foro/evaluar",
+    summary="Evaluación cuantitativa del motor de búsqueda",
+    description=(
+        "Ejecuta casos de prueba sobre el corpus recibido para calcular "
+        "la métrica Precision@3, latencia en ms y % de registros válidos."
     )
+)
+def evaluate_forum_search(documents: list[ForumDocument]):
+    test_cases = [
+        {"query": "duda examen", "expected_ids": [1, 2]},
+        {"query": "proyecto final", "expected_ids": [3]},
+        {"query": "vocabulario ingles", "expected_ids": [4, 5]}
+    ]
+    return evaluate_search_engine(documents, test_cases, k=3)
