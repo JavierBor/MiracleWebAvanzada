@@ -1,8 +1,9 @@
-import pytest
+
 from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 from main import app
 from services import DefinicionLimpia
+
 
 # Instanciamos el cliente de pruebas de FastAPI
 client = TestClient(app)
@@ -52,7 +53,7 @@ def test_consultar_palabra_invalida():
     response = client.get("/api/vocabulario/student123")
     assert response.status_code == 422
     data = response.json()
-    assert "detail" in data  # FastAPI devuelve el detalle del error de validación
+    assert "detail" in data
 
 
 @patch("main.obtener_datos_diccionario", new_callable=AsyncMock)
@@ -85,6 +86,7 @@ def test_buscar_foro_exito():
     assert data["query"] == "examen ingles"
     assert "processing_time_ms" in data
     assert len(data["results"]) > 0
+
     # El documento con ID 1 coincide mejor y lidera el ranking
     assert data["results"][0]["id"] == 1
     assert data["results"][0]["score"] > 0
@@ -143,4 +145,3 @@ def test_evaluar_foro_sin_documentos():
     data = response.json()
     assert data["average_precision"] == 0.0
     assert data["average_latency_ms"] == 0.0
-    

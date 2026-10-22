@@ -1,3 +1,4 @@
+
 import httpx
 import asyncio
 import time
@@ -9,7 +10,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from models import ForumDocument, SearchResult, SearchResponse
 
+
 # --- 1. DICCIONARIO Y TRADUCCIÓN ---
+
 
 class DefinicionLimpia(BaseModel):
     palabra: str
@@ -20,6 +23,7 @@ class DefinicionLimpia(BaseModel):
     definicion_en: Optional[str] = None
     ejemplo: Optional[str] = None
     sinonimos: List[str] = []
+
 
 DATAMUSE_URL = "https://api.datamuse.com/words"
 
@@ -36,11 +40,13 @@ MAPA_CATEGORIAS = {
     "u": "interjección"
 }
 
+
 def traducir_texto(texto: str) -> str:
     try:
         return MyMemoryTranslator(source="en-US", target="es-ES").translate(texto)
     except Exception:
         return texto
+
 
 async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
     palabra_limpia = palabra.strip().lower()
@@ -113,16 +119,18 @@ async def obtener_datos_diccionario(palabra: str) -> DefinicionLimpia:
             sinonimos=[]
         )
 
+
 # --- 2. BÚSQUEDA Y EVALUACIÓN DEL FORO (PUNTOS 6 Y 7) ---
+
 
 def search_forum_posts(query: str, documents: list[ForumDocument]) -> SearchResponse:
     start_time = time.time()
-    
+
     if not documents or not query.strip():
         return SearchResponse(query=query, processing_time_ms=0.0, results=[])
 
     contents = [doc.content or "" for doc in documents]
-    
+
     try:
         vectorizer = TfidfVectorizer(stop_words='english')
         tfidf_matrix = vectorizer.fit_transform(contents)
@@ -135,15 +143,16 @@ def search_forum_posts(query: str, documents: list[ForumDocument]) -> SearchResp
     for idx, score in enumerate(cosine_sim):
         if score > 0.0:
             results.append(SearchResult(id=documents[idx].id, score=round(float(score), 4)))
-            
+
     results.sort(key=lambda x: x.score, reverse=True)
-    
+
     elapsed_time = (time.time() - start_time) * 1000
     return SearchResponse(
         query=query,
         processing_time_ms=round(elapsed_time, 2),
         results=results
     )
+
 
 def evaluate_search_engine(documents: list[ForumDocument], test_cases: list[dict], k: int = 3) -> dict:
     total_precision = 0.0
@@ -153,10 +162,10 @@ def evaluate_search_engine(documents: list[ForumDocument], test_cases: list[dict
     for test in test_cases:
         query = test["query"]
         expected_ids = set(test["expected_ids"])
-        
+
         response = search_forum_posts(query, documents)
         retrieved_ids = [r.id for r in response.results[:k]]
-        
+
         if retrieved_ids:
             relevant_retrieved = len(set(retrieved_ids).intersection(expected_ids))
             precision_at_k = relevant_retrieved / min(k, len(retrieved_ids))
