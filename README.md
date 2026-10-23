@@ -465,3 +465,21 @@ Se implementó una estrategia de evaluación cuantitativa sobre el motor de bús
   - Contrato de vocabulario y validaciones de Pydantic (HTTP 422 y 404).
   - Motor de búsqueda TF-IDF y casos borde del foro (corpus vacío, stopwords).
   - Evaluación cuantitativa de Precision@3 y métricas de latencia.
+
+
+## Diseño Preliminar de la Capacidad Adaptativa (EP2 - Punto 8)
+
+Para el Módulo 3, el sistema "MiracleWebAvanzada" implementará un motor inteligente basado en el Ajuste Dinámico de Dificultad (DDA) dentro de sus mecánicas de juego. A continuación se define su especificación preliminar:
+
+*   **¿Qué parte del sistema se adaptará?:** La dificultad gramatical de las palabras consultadas en tiempo real durante los minijuegos. El caso de uso principal será el "Verb Transformer", donde el usuario debe conjugar verbos al *Past Simple*.
+*   **¿Quién será el usuario beneficiado?:** El estudiante, proporcionándole un desafío progresivo que lo mantenga en estado de "flujo" (evitando el aburrimiento) y penalice los errores para fomentar la retención y concentración.
+*   **¿Qué información recuperada desde la Web será utilizada?:** Un corpus masivo de verbos extraído de **Datamuse API** (necesaria para obtener las palabras, filtrar algorítmicamente su categoría gramatical y determinar su frecuencia de uso) y **MyMemory API** (necesaria para automatizar la traducción contextual al español). Esta automatización es indispensable para escalar el diccionario sin depender de ingresos manuales estáticos.
+*   **¿Qué variables de usuario o contexto podrían considerarse?:** La "racha" (streak) en vivo de respuestas correctas consecutivas del usuario dentro de la sesión de juego activa.
+*   **¿Qué decisión deberá tomar el sistema?:** Cambiar algorítmicamente la complejidad morfológica del verbo a consultar. 
+    * **Racha Baja (Fácil):** El sistema inyecta verbos regulares (ej. *Play -> Played*).
+    * **Racha Media (Medio):** El sistema inyecta verbos irregulares de uso cotidiano (ej. *Go -> Went*).
+    * **Racha Alta (Difícil):** El sistema inyecta verbos irregulares complejos o invariables (ej. *Broadcast -> Broadcast*).
+    * Si el usuario comete un error, la racha se rompe y la dificultad se reinicia a Fácil.
+*   **¿Qué resultado deberá ser visible para el usuario?:** Un incremento notable en la complejidad de los verbos a transformar a medida que mantiene su racha de aciertos, y una evidente caída a verbos regulares sencillos al equivocarse y perder su progreso.
+*   **¿Qué mecanismo podría emplearse?:** Un motor basado en políticas y reglas de estado evaluadas desde el backend (NestJS), que actúe como un selector dinámico de dificultad sobre la base de datos PostgreSQL.
+*   **¿Cómo podría evaluarse posteriormente la utilidad de la adaptación?:** Se comparará la métrica de la "racha máxima conseguida" en la sesión actual versus la "mejor racha histórica" del estudiante, midiendo si el riesgo de volver a cero y la progresión dinámica fomentan una mayor tasa de éxito ("engagement") que jugar con una dificultad estática o aleatoria.
