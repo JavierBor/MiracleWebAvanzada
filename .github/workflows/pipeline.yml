@@ -84,10 +84,15 @@ jobs:
           echo "DB_USER=miracle" > .env
           echo "DB_PASSWORD=miracle_password" >> .env
           echo "DB_NAME=miracle_db" >> .env
+
           docker compose up -d
           sleep 15 
+
           cd backend
+          export DATABASE_URL="postgresql://miracle:miracle_password@localhost:5432/miracle_db"
+          npx prisma db push
           npm run test:e2e
+
           cd ..
           docker compose down
       
