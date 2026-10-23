@@ -81,9 +81,14 @@ jobs:
       
       - name: Pruebas de integración NestJS-FastAPI
         run: |
+          echo "DB_USER=miracle" > .env
+          echo "DB_PASSWORD=miracle_password" >> .env
+          echo "DB_NAME=miracle_db" >> .env
           docker compose up -d
-          sleep 15 # Dar tiempo a que PostgreSQL y FastAPI inicialicen
-          docker compose exec -T backend npm run test:e2e
+          sleep 15 
+          cd backend
+          npm run test:e2e
+          cd ..
           docker compose down
       
       - name: Análisis Trivy - Backend
