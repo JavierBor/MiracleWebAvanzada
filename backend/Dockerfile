@@ -6,6 +6,7 @@ RUN npm install
 COPY . .
 RUN npx prisma generate
 RUN npm run build
+RUN npm prune --omit=dev
 
 # Etapa 2: Producción
 FROM node:22-alpine
