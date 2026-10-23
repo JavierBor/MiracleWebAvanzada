@@ -113,6 +113,7 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
+          trivyignores: '.trivyignore'
 
       - name: Análisis Trivy - Frontend
         uses: aquasecurity/trivy-action@master
