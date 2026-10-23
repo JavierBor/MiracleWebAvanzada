@@ -15,6 +15,7 @@ services:
 
   # Backend principal (NestJS)
   backend:
+    image: miracle-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -31,6 +32,7 @@ services:
 
   # Microservicio especializado (Python / FastAPI)
   python-service:
+    image: miracle-python
     build:
       context: ./Microservicio
       dockerfile: Dockerfile
@@ -46,6 +48,7 @@ services:
 
   # Frontend (Angular + Ionic)
   frontend:
+    image: miracle-frontend
     build:
       context: ./Frontend
       dockerfile: Dockerfile
