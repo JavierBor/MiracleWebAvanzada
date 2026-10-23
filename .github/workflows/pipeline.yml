@@ -65,8 +65,8 @@ jobs:
         working-directory: ./Microservicio
         run: |
           pip install bandit safety
-          bandit -r . -ll -c "bandit.yml" || echo "Configura las reglas de Bandit según corresponda"
-          safety check
+          bandit -r . -ll
+          safety check -r requirements.txt
 
       # --- SEGURIDAD Y CONSTRUCCIÓN ---
       - name: Detección de secretos expuestos
