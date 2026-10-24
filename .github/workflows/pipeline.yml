@@ -60,6 +60,13 @@ jobs:
         run: |
           flake8 .
           pytest
+          
+      - name: Análisis de seguridad y dependencias Python
+        working-directory: ./Microservicio
+        run: |
+          pip install bandit safety
+          bandit -r . -ll
+          safety check -r requirements.txt
 
       # --- SEGURIDAD Y CONSTRUCCIÓN ---
       - name: Detección de secretos expuestos
@@ -71,6 +78,51 @@ jobs:
       - name: Construcción de Imágenes Docker
         run: |
           docker compose build
+      
+      - name: Pruebas de integración NestJS-FastAPI
+        run: |
+          echo "DB_USER=miracle" > .env
+          echo "DB_PASSWORD=miracle_password" >> .env
+          echo "DB_NAME=miracle_db" >> .env
+
+          docker compose up -d
+          sleep 15 
+
+          cd backend
+          export DATABASE_URL="postgresql://miracle:miracle_password@localhost:5432/miracle_db"
+          npx prisma db push
+          npm run test:e2e
+
+          cd ..
+          docker compose down
+      
+      - name: Análisis Trivy - Backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'miracle-backend'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: Análisis Trivy - Python
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'miracle-python'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          trivyignores: '.trivyignore'
+
+      - name: Análisis Trivy - Frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'miracle-frontend'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
 
   # ==========================================
   # 2. VALIDACIÓN DE INFRAESTRUCTURA (TERRAFORM)
