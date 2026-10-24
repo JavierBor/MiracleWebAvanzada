@@ -1,20 +1,26 @@
 services:
   # Base de datos relacional
   database:
-      image: postgres:15-alpine
-      container_name: postgres_db
-      restart: always
-      environment:
-        POSTGRES_USER: ${DB_USER}
-        POSTGRES_PASSWORD: ${DB_PASSWORD}
-        POSTGRES_DB: ${DB_NAME}
-      ports:
-        - "5432:5432"
-      volumes:
-        - postgres_data:/var/lib/postgresql/data
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-miracle} -d ${DB_NAME:-miracle_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Backend principal (NestJS)
   backend:
+    image: miracle-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -27,10 +33,17 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   # Microservicio especializado (Python / FastAPI)
   python-service:
+    image: miracle-python
     build:
       context: ./Microservicio
       dockerfile: Dockerfile
@@ -38,14 +51,17 @@ services:
     restart: always
     environment:
       PORT: 8000
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   # Frontend (Angular + Ionic)
   frontend:
+    image: miracle-frontend
     build:
       context: ./Frontend
       dockerfile: Dockerfile
@@ -54,7 +70,8 @@ services:
     ports:
       - "8100:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:

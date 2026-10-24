@@ -9,4 +9,9 @@ export class AppController {
   getHello(): Promise<string> {
     return this.appService.getHello();
   }
+
+  @Get('health')
+  getHealth() {
+    return { status: 'ok', service: 'nestjs-backend' };
+  }
 }

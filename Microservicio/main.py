@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Path, HTTPException
+import time
+from fastapi import FastAPI, Path, HTTPException, Request
 from services import (
     DefinicionLimpia,
     obtener_datos_diccionario,
@@ -16,6 +17,16 @@ app = FastAPI(
     ),
     version="1.0.0",
 )
+
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = (time.time() - start_time) * 1000  # En milisegundos
+    response.headers["X-Response-Time"] = f"{process_time:.2f}ms"
+    print(f"[LATENCIA] {request.method} {request.url.path} - {process_time:.2f}ms")
+    return response
 
 
 @app.get("/health", summary="Revisión de salud del microservicio")
