@@ -498,6 +498,9 @@ El proyecto cuenta con una canalización automatizada mediante GitHub Actions (`
 * **Detección de Secretos**: Uso de TruffleHog para evitar la exposición accidental de llaves o tokens en los repositorios.
 * **Seguridad de Contenedores e IaC**: Análisis de vulnerabilidades en las imágenes Docker de los tres servicios usando Trivy (apoyado en `.trivyignore`), y validación del código de infraestructura de Terraform (`fmt`, `validate`, `plan`).
 * **Despliegue y Salud**: Despliegue automatizado hacia el ambiente de staging mediante webhooks, seguido de pruebas de salud post-despliegue automáticas.
+### Evidencia del Pipeline DevSecOps (GitHub Actions)
+> **Ejecución exitosa del pipeline integrado en GitHub Actions:** Confirmación del paso en verde de las pruebas unitarias, escaneo SAST, validación Trivy e infraestructura como código.
+![Pipeline Exitoso](./assets/pipeline-verde.png)
 
 ## Observabilidad Inicial (EP2 - Punto 10)
 Para garantizar la trazabilidad y la resiliencia del sistema, se han integrado métricas y controles de salud en cada capa:
@@ -505,6 +508,24 @@ Para garantizar la trazabilidad y la resiliencia del sistema, se han integrado m
 * **Verificación de Conexión (PostgreSQL)**: Integración de `pg_isready` en los *healthchecks* de Docker Compose, asegurando que NestJS y FastAPI solo reciban tráfico cuando la base de datos esté lista.
 * **Métrica de Tiempo de Respuesta**: Implementación de un middleware en FastAPI y un interceptor global en NestJS (`LoggingInterceptor`) que calculan la latencia de procesamiento e inyectan el encabezado `X-Response-Time` en milisegundos.
 * **Registros Estructurados y Errores**: Logueo de solicitudes HTTP en consola con sus respectivos códigos de estado, incluyendo la captura controlada de errores de las fuentes externas (Datamuse/MyMemory) mediante bloques `try/catch` que evitan caídas del servicio y generan registros claros.
+### Evidencia de Observabilidad y Healthchecks
+
+#### 1. Registros de Latencia y Monitoreo en Tiempo Real (Docker Logs)
+> Salida en consola de los servicios `nestjs_backend` y `python_microservice` ejecutando *healthchecks* periódicos e imprimiendo el tiempo de respuesta.
+
+![Logs de Latencia](./assets/logs-latencia.png)
+
+#### 2. Verificación de Endpoints de Salud e Inyección de Headers (`GET /health`)
+> Peticiones HTTP directas que comprueban el código de estado 200 OK y la inyección del encabezado `X-Response-Time`.
+
+**Backend Principal (NestJS - Puerto 3000):**
+
+![Curl Healthcheck](./assets/curl3000.png)
+
+
+**Microservicio Adaptativo (FastAPI - Puerto 8000):**
+
+![Curl Healthcheck](./assets/curl8000.png)
 
 ## Documentación Actualizada (EP2 - Punto 11)
 
