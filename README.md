@@ -390,6 +390,13 @@ El proyecto utiliza variables de entorno para configurar la comunicación entre 
 
 # Entrega parcial 2 Miracle
 
+## Arquitectura y Robustez del Frontend (Angular + Ionic) (EP2 - Punto 1)
+
+El cliente frontend (`/Frontend`) no es una interfaz básica; está desarrollado sobre Angular e Ionic Framework, ofreciendo una arquitectura multiplataforma híbrida (Web y Móvil) de alta escalabilidad:
+
+* **Componentización Modular**: Estructura basada en módulos independientes para autenticación, gestión comunitaria (foro), sistema de vocabulario y componentes adaptativos.
+* **Seguridad e Intercepción (HttpInterceptor)**: Gestión centralizada de tokens JWT para inyección automática en las cabeceras HTTP, garantizando comunicación segura y validada con el backend NestJS.
+* **Diseño Responsivo y Experiencia de Usuario (UI/UX)**: Interfaces construidas con componentes nativos de Ionic, optimizados para adaptar su visualización dinámicamente entre dispositivos móviles y vistas de escritorio.
 
 ## Estrategia de Gestión de Datos de Vocabulario (EP2 - Punto 3)
 
@@ -483,3 +490,30 @@ Para el Módulo 3, el sistema "MiracleWebAvanzada" implementará un motor inteli
 *   **¿Qué resultado deberá ser visible para el usuario?:** Un incremento notable en la complejidad de los verbos a transformar a medida que mantiene su racha de aciertos, y una evidente caída a verbos regulares sencillos al equivocarse y perder su progreso.
 *   **¿Qué mecanismo podría emplearse?:** Un motor basado en políticas y reglas de estado evaluadas desde el backend (NestJS), que actúe como un selector dinámico de dificultad sobre la base de datos PostgreSQL.
 *   **¿Cómo podría evaluarse posteriormente la utilidad de la adaptación?:** Se comparará la métrica de la "racha máxima conseguida" en la sesión actual versus la "mejor racha histórica" del estudiante, midiendo si el riesgo de volver a cero y la progresión dinámica fomentan una mayor tasa de éxito ("engagement") que jugar con una dificultad estática o aleatoria.
+
+## Actualización del Pipeline DevSecOps (EP2 - Punto 9)
+El proyecto cuenta con una canalización automatizada mediante GitHub Actions (`.github/workflows/pipeline.yml`), gestionando la configuración mediante *GitHub Actions Variables* y credenciales mediante *GitHub Actions Secrets*. El flujo integra:
+* **Pruebas y Calidad**: Ejecución de pruebas unitarias del servicio Python (`pytest`), pruebas de integración NestJS-FastAPI, pruebas del motor de recuperación de información, y linting de código Python (`flake8`).
+* **Análisis Estático y Dependencias (SAST)**: Detección de código inseguro con Bandit y análisis de dependencias vulnerables de Python con Safety.
+* **Detección de Secretos**: Uso de TruffleHog para evitar la exposición accidental de llaves o tokens en los repositorios.
+* **Seguridad de Contenedores e IaC**: Análisis de vulnerabilidades en las imágenes Docker de los tres servicios usando Trivy (apoyado en `.trivyignore`), y validación del código de infraestructura de Terraform (`fmt`, `validate`, `plan`).
+* **Despliegue y Salud**: Despliegue automatizado hacia el ambiente de staging mediante webhooks, seguido de pruebas de salud post-despliegue automáticas.
+
+## Observabilidad Inicial (EP2 - Punto 10)
+Para garantizar la trazabilidad y la resiliencia del sistema, se han integrado métricas y controles de salud en cada capa:
+* **Endpoints de Salud (`/health`)**: Ambos servicios (NestJS y FastAPI) exponen puntos de control para reportar su estado operativo.
+* **Verificación de Conexión (PostgreSQL)**: Integración de `pg_isready` en los *healthchecks* de Docker Compose, asegurando que NestJS y FastAPI solo reciban tráfico cuando la base de datos esté lista.
+* **Métrica de Tiempo de Respuesta**: Implementación de un middleware en FastAPI y un interceptor global en NestJS (`LoggingInterceptor`) que calculan la latencia de procesamiento e inyectan el encabezado `X-Response-Time` en milisegundos.
+* **Registros Estructurados y Errores**: Logueo de solicitudes HTTP en consola con sus respectivos códigos de estado, incluyendo la captura controlada de errores de las fuentes externas (Datamuse/MyMemory) mediante bloques `try/catch` que evitan caídas del servicio y generan registros claros.
+
+## Documentación Actualizada (EP2 - Punto 11)
+
+### Documentación de APIs
+* **NestJS (Backend Principal)**: La documentación interactiva bajo el estándar OpenAPI (Swagger) se encuentra autogenerada y accesible en la ruta `/api` al levantar el servicio.
+* **FastAPI (Microservicio)**: Los endpoints, esquemas de Pydantic y códigos de error documentados se exponen automáticamente en la ruta `/docs`.
+
+### Instrucciones de Despliegue en Staging
+El despliegue en staging está completamente automatizado a través del pipeline DevSecOps. 
+1. Cualquier *push* o *merge* hacia la rama `main` gatilla el flujo en GitHub Actions.
+2. Tras superar exitosamente las etapas de pruebas, linting y seguridad, el *Job 3* ejecuta una petición POST hacia el webhook configurado en el secreto `RENDER_DEPLOY_HOOK_URL`.
+3. Esto instruye a la plataforma cloud a extraer la última versión del repositorio, compilar los contenedores y desplegar la versión funcional sin intervención manual.
