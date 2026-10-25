@@ -398,6 +398,17 @@ El cliente frontend (`/Frontend`) no es una interfaz básica; está desarrollado
 * **Seguridad e Intercepción (HttpInterceptor)**: Gestión centralizada de tokens JWT para inyección automática en las cabeceras HTTP, garantizando comunicación segura y validada con el backend NestJS.
 * **Diseño Responsivo y Experiencia de Usuario (UI/UX)**: Interfaces construidas con componentes nativos de Ionic, optimizados para adaptar su visualización dinámicamente entre dispositivos móviles y vistas de escritorio.
 
+### 2. Fuente de información web (EP2 - Punto 2)
+
+*   **Identificación de la fuente:** Se utilizan dos APIs externas combinadas: **Datamuse API** (https://api.datamuse.com/words) para la obtención de datos del idioma y **MyMemory API** para la traducción al español.
+*   **Descripción de los datos obtenidos:** Desde Datamuse se extraen datos estructurados en inglés como palabras, categorías gramaticales (sustantivo, verbo, adjetivo, etc.), definiciones originales y fonética de pronunciación. Posteriormente, MyMemory toma estas definiciones originales y devuelve su traducción precisa al español.
+*   **Justificación de su uso dentro del proyecto:** *Miracle* es una aplicación diseñada para apoyar el aprendizaje del idioma inglés. Proveer definiciones exactas, su pronunciación fonética y su traducción al español integradas directamente en las actividades interactivas es fundamental para enriquecer la experiencia de estudio. Estos datos alimentan el vocabulario dinámico de los juegos, permitiendo generar ejercicios variados y adaptables para el estudiante.
+*   **Método de obtención:** La información se obtiene mediante consumo de **APIs REST** (peticiones HTTP asíncronas). Este proceso es gestionado por el microservicio en Python (FastAPI), utilizando la librería `httpx` para Datamuse y `deep_translator` para MyMemory. Ambos consumos se fusionan en un único contrato de datos (DTO) antes de enviarse al backend. 
+*   **Frecuencia o estrategia de actualización:** La extracción de datos se realiza **bajo demanda (on-demand)**. Cuando el sistema requiere una palabra nueva, Python consulta simultáneamente las APIs. Para optimizar el rendimiento, asegurar la disponibilidad y evitar bloqueos, la arquitectura delega en NestJS un sistema de caché activo; es decir, los resultados procesados se persisten en PostgreSQL y, si el estudiante vuelve a requerir la misma palabra, el sistema la recupera localmente sin volver a consumir la API externa.
+*   **Revisión de restricciones legales, éticas y de privacidad:**
+    *   **Legales y Éticas:** Datamuse permite el uso libre de su API con un límite ético de hasta 100,000 peticiones diarias, mientras que MyMemory gratuito limita la cantidad de palabras traducidas por día. El sistema realiza un consumo responsable gracias a la política de **caché y deduplicación activa**, lo que reduce drásticamente las peticiones repetidas, previniendo el abuso de la red y respetando los *rate limits* (límites de consumo) de ambos proveedores.
+    *   **Privacidad:** El sistema cumple con la minimización de datos. El microservicio en Python solo envía el término específico (ej. una palabra en inglés) a las fuentes externas. Nunca se exponen ni transmiten datos del usuario, historial, IPs del estudiante ni métricas de desempeño hacia Datamuse o MyMemory.
+
 ## Estrategia de Gestión de Datos de Vocabulario (EP2 - Punto 3)
 
 Para garantizar la calidad de los datos del juego de vocabulario y la estabilidad del sistema, se implementó un pipeline robusto de extracción, transformación y persistencia en el backend (NestJS + PostgreSQL):
@@ -424,7 +435,17 @@ Para cumplir con los requisitos de integración, el microservicio se ha desarrol
 * **Control de tiempos de espera:** Las peticiones asíncronas hacia las APIs externas (Datamuse) cuentan con un límite estricto (`timeout` de 3.5 segundos en `httpx`), evitando bloquear el hilo principal y asegurando respuestas rápidas.
 * **Manejo de indisponibilidad del servicio:** Si la fuente externa o el propio microservicio tardan demasiado o fallan, el sistema lanza excepciones controladas (ej. 504 Gateway Timeout o 503 Service Unavailable), permitiendo que NestJS las intercepte y mantenga la aplicación estable sin bloqueos en cadena.
 
-## (EP2 - Punto 5)
+## Persistencia e Indexación (EP2 - Punto 5)
+
+Para asegurar una persistencia eficiente y trazable de la información, la base de datos (PostgreSQL + Prisma) y el backend se configuraron cumpliendo estrictamente con los siguientes requisitos:
+
+* *Almacenamiento de los datos recuperados:* Los datos lingüísticos extraídos y procesados por FastAPI (definiciones, fonética, audios) se persisten de manera estructurada en el modelo Vocabulario.
+* *Metadatos de procedencia:* Se definió el campo fuente (ej. "Datamuse API + MyMemory") dentro del esquema para registrar de manera inmutable el origen exacto de cada pieza de información.
+* *Fecha y hora de recuperación o actualización:* El modelo incluye los campos fecha_recuperacion (cuándo se obtuvo de la API externa) y ultima_actualizacion (gestionado de forma automática por el decorador @updatedAt de Prisma ante cualquier modificación).
+* *Estructura de indexación, cuando corresponda:* Se implementó una estructura tabular relacional fuertemente tipada en Prisma, diseñada para soportar consultas frecuentes desde el backend principal.
+* *Mecanismo para evitar registros duplicados:* Se aplica una restricción @unique sobre el campo palabra en la base de datos. En la lógica de NestJS, esto se combina con el comando upsert, el cual actualiza la información si la palabra ya existe, o la inserta si es completamente nueva.
+* *Definición de índices o criterios de búsqueda:* Se declararon directivas @@index([categoria_gramatical]) y @@index([fecha_recuperacion]) en el esquema para que el motor de base de datos no escanee tabla completa, optimizando los tiempos de respuesta al filtrar vocabulario para los juegos.
+* *Relación entre los datos externos y los datos propios del sistema:* Se estableció una relación estructural (Muchos a Muchos) conectando el modelo de datos externos (Vocabulario) con el modelo interno de la plataforma (Juego), permitiendo que el motor de juego consuma el diccionario para sus dinámicas.
 
 ## Recolección y recuperación de información (motor de búsqueda) (EP2 - Punto 6)
 
