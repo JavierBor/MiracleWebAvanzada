@@ -15,15 +15,20 @@ COPY . .
 # Compilar aplicación
 RUN npm run build -- --configuration=production
 
+
 # Etapa 2: Servidor Nginx
 FROM nginx:alpine
+
+# Actualizar paquetes de Alpine
+RUN apk update && apk upgrade --no-cache
 
 # Configuración SPA
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copiar compilación desde la primera etapa
+# Copiar compilación Angular
 COPY --from=build /app/dist/Frontend/browser /usr/share/nginx/html
 
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
+
