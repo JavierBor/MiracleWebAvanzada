@@ -1,5 +1,8 @@
-<!-- Agrega (adminModeChange)="onAdminModeChange($event)" aquí: -->
-<app-header (adminModeChange)="onAdminModeChange($event)"></app-header>
+<app-header 
+  [showBack]="false" 
+  [showHistoryBack]="false"
+  (adminModeChange)="onAdminModeChange($event)">
+</app-header>
 
 <!-- El resto de tu contenido del dashboard... -->
 <ion-content class="miracle-bg">

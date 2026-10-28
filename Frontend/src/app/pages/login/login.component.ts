@@ -74,11 +74,22 @@ export class LoginComponent implements OnInit {
       next: (res: any) => {
         this.cargando = false;
         console.log('Login exitoso:', res);
-        if (res.usuario?.rol === 'ADMIN') {
-          this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/dashboard']);
+
+        // 1. Guardar el Token JWT
+        if (res.access_token) {
+          localStorage.setItem('access_token', res.access_token);
         }
+
+        // 2. Guardar los datos del usuario (para que HeaderComponent reconozca el rol)
+        if (res.usuario) {
+          localStorage.setItem('user', JSON.stringify(res.usuario));
+        }
+
+        // 3. Limpiar cualquier modo admin previo para que inicie en vista de usuario común
+        localStorage.removeItem('miracle_admin_mode');
+
+        // 4. TODOS los usuarios van directo al Dashboard
+        this.router.navigate(['/dashboard']);
       },
       error: (err: any) => {
         this.cargando = false;

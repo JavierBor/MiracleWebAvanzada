@@ -37,11 +37,14 @@
 
         <!-- Menú desplegable -->
         <div class="dropdown-menu" *ngIf="showAccountMenu">
-          <button type="button" class="dropdown-item" (click)="toggleAdminMode()">
+          <!-- SOLO se muestra si el usuario logueado es Administrador -->
+          <button type="button" class="dropdown-item" *ngIf="isUserAdmin" (click)="toggleAdminMode()">
             <ion-icon name="shield-checkmark-outline" class="dropdown-icon"></ion-icon>
             <span>{{ isAdminMode ? 'Salir de Modo Admin' : 'Modo Admin' }}</span>
           </button>
-          <div class="dropdown-divider"></div>
+          
+          <div class="dropdown-divider" *ngIf="isUserAdmin"></div>
+
           <button type="button" class="dropdown-item logout-item" (click)="cerrarSesion()">
             <ion-icon name="log-out-outline" class="dropdown-icon"></ion-icon>
             <span>Cerrar sesión</span>

@@ -76,10 +76,8 @@ export class DashboardComponent implements OnInit { // 2. Implementa OnInit
       this.router.navigate(['/admin']);
     }
   }
-
-  // 4. Captura el cambio cuando haces clic en "Modo Admin" desde el menú desplegable del header
+  
   onAdminModeChange(isAdmin: boolean) {
-    this.isAdminMode = isAdmin;
     if (isAdmin) {
       this.router.navigate(['/admin']);
     }
