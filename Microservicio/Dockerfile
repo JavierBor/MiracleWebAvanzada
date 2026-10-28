@@ -1,19 +1,22 @@
+
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Evita que Python escriba archivos .pyc y fuerza la salida directa a terminal
+# Evita archivos .pyc y muestra logs directamente
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Actualiza el sistema operativo base para parchar vulnerabilidades heredadas
+# Actualizar paquetes del sistema
 RUN apt-get update && apt-get upgrade -y && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Instalar dependencias y retirar pip de la imagen
+RUN python -m pip install --no-cache-dir --upgrade pip && \
+    python -m pip install --no-cache-dir -r requirements.txt && \
+    python -m pip uninstall -y pip
 
 COPY . .
 

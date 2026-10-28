@@ -5,3 +5,4 @@ pydantic
 deep-translator
 scikit-learn
 pytest
+msgpack==1.2.3
