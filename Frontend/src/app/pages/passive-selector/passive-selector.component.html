@@ -1,0 +1,81 @@
+<app-header 
+  badge="ING-IV" 
+  [showBack]="true" 
+  backRoute="/menuIngIV" 
+  backText="Volver">
+</app-header>
+
+<ion-content class="ion-padding background-container">
+
+  <!-- Pantalla de Bienvenida / Explicación (Fiel a tu imagen) -->
+  <div class="game-card-intro" *ngIf="!juegoIniciado">
+    <div class="tag-pill">
+      <span class="dot"></span>
+      <span class="tag-text">GRAMÁTICA</span>
+    </div>
+
+    <h1 class="game-title">Passive Selector</h1>
+
+    <p class="game-description">
+      Te mostramos una oración común en voz activa (por ejemplo: "The dog ate the pizza 🍕"). Tu misión es leer rápidamente las opciones y seleccionar el botón que contenga la transformación correcta a voz pasiva antes de que se acabe el tiempo.
+    </p>
+
+    <button class="btn-jugar" (click)="iniciarJuego()">
+      Jugar <ion-icon name="play-circle"></ion-icon>
+    </button>
+  </div>
+
+  <!-- Pantalla del Juego Activo -->
+  <div class="game-container" *ngIf="juegoIniciado && !juegoTerminado">
+    <!-- Marcadores superiores -->
+    <div class="hud-bar">
+      <div class="vidas-box">
+        <ion-icon 
+          *ngFor="let v of [1,2,3]" 
+          [name]="v <= vidas ? 'heart' : 'heart-outline'" 
+          class="heart-icon">
+        </ion-icon>
+      </div>
+      <div class="timer-box">
+        <ion-icon name="time-outline"></ion-icon>
+        <span>{{ tiempoRestante }}s</span>
+      </div>
+      <div class="score-box">
+        Puntos: <strong>{{ puntaje }}</strong>
+      </div>
+    </div>
+
+    <!-- Oración Activa Central -->
+    <div class="sentence-card" [ngClass]="claseFeedback">
+      <p class="prompt-text">Voz Activa:</p>
+      <h2 class="active-sentence">"{{ preguntaActual.oracionActiva }}"</h2>
+      <p class="feedback-msg" *ngIf="mensajeFeedback">{{ mensajeFeedback }}</p>
+    </div>
+
+    <!-- Opciones de Transformación Pasiva -->
+    <div class="options-list">
+      <button 
+        *ngFor="let op of opcionesMezcladas" 
+        class="btn-option" 
+        (click)="seleccionarOpcion(op)">
+        {{ op.texto }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Pantalla Game Over -->
+  <div class="game-over-card" *ngIf="juegoTerminado">
+    <h2>¡Juego Terminado!</h2>
+    <p class="final-score">Puntaje Final: <strong>{{ puntaje }}</strong></p>
+
+    <div class="actions">
+      <button class="btn-restart" (click)="iniciarJuego()">
+        <ion-icon name="reload-outline"></ion-icon> Reintentar
+      </button>
+      <button class="btn-back" (click)="volverAlMenu()">
+        <ion-icon name="arrow-back-outline"></ion-icon> Salir
+      </button>
+    </div>
+  </div>
+
+</ion-content>

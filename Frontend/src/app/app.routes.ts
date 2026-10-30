@@ -68,5 +68,14 @@ export const routes: Routes = [
         (m) => m.JuegoVocabularioComponent
       ),
   },
+  
+  {
+    path: 'the-3-buttons',
+    loadComponent: () => import('./pages/the-3-buttons/the-3-buttons.component').then(m => m.The3ButtonsComponent)
+  },
 
+  {
+  path: 'passive-selector',
+  loadComponent: () => import('./pages/passive-selector/passive-selector.component').then(m => m.PassiveSelectorComponent)
+}
 ];
