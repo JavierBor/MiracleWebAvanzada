@@ -75,26 +75,42 @@ jobs:
           path: ./
           extra_args: --debug --only-verified
 
-      - name: Construcción de Imágenes Docker
+      - name: Preparar variables de entorno para CI
+        env:
+          DB_USER: ${{ vars.CI_DB_USER }}
+          DB_NAME: ${{ vars.CI_DB_NAME }}
+          DB_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
         run: |
-          docker compose build
-      
-      - name: Pruebas de integración NestJS-FastAPI
-        run: |
-          echo "DB_USER=miracle" > .env
-          echo "DB_PASSWORD=miracle_password" >> .env
-          echo "DB_NAME=miracle_db" >> .env
+          set -eu
+          : "${DB_USER:?Falta CI_DB_USER}"
+          : "${DB_NAME:?Falta CI_DB_NAME}"
+          : "${DB_PASSWORD:?Falta CI_DB_PASSWORD}"
 
+          printf 'DB_USER=%s\nDB_PASSWORD=%s\nDB_NAME=%s\n' \
+            "$DB_USER" "$DB_PASSWORD" "$DB_NAME" > .env
+
+          echo "NODE_ENV=test" > backend/.env
+
+      - name: Construcción de Imágenes Docker
+        run: docker compose build
+
+      - name: Pruebas de integración NestJS-FastAPI
+        env:
+          DB_USER: ${{ vars.CI_DB_USER }}
+          DB_NAME: ${{ vars.CI_DB_NAME }}
+          DB_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+        run: |
           docker compose up -d
-          sleep 15 
+          sleep 15
 
           cd backend
-          export DATABASE_URL="postgresql://miracle:miracle_password@localhost:5432/miracle_db"
+          export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}"
           npx prisma db push
           npm run test:e2e
 
-          cd ..
-          docker compose down
+      - name: Detener contenedores de integración
+        if: always()
+        run: docker compose down
       
       - name: Análisis Trivy - Backend
         uses: aquasecurity/trivy-action@master
