@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
@@ -26,7 +26,7 @@ export interface PreguntaPasiva {
   imports: [CommonModule, IonContent, IonIcon, HeaderComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class PassiveSelectorComponent implements OnInit, OnDestroy {
+export class PassiveSelectorComponent implements OnDestroy {
   // Estado del juego
   vidasMaximas = 3;
   vidas = 3;
@@ -112,8 +112,6 @@ export class PassiveSelectorComponent implements OnInit, OnDestroy {
       playCircle
     });
   }
-
-  ngOnInit() {}
 
   ngOnDestroy() {
     this.detenerTemporizador();

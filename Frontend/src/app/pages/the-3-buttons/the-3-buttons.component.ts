@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
@@ -19,7 +19,7 @@ export interface ColocacionItem {
   imports: [CommonModule, IonContent, IonIcon, HeaderComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class The3ButtonsComponent implements OnInit, OnDestroy {
+export class The3ButtonsComponent implements OnDestroy {
   // Configuración de juego
   vidasMaximas = 3;
   vidas = 3;
@@ -64,8 +64,6 @@ export class The3ButtonsComponent implements OnInit, OnDestroy {
       playCircle
     });
   }
-
-  ngOnInit() {}
 
   ngOnDestroy() {
     this.detenerTemporizador();
@@ -123,7 +121,7 @@ export class The3ButtonsComponent implements OnInit, OnDestroy {
 
     this.intervaloTiempo = setInterval(() => {
       this.tiempoRestante--;
-      
+
       // Fuerza la actualización del contador en la interfaz
       this.cdr.detectChanges();
 
