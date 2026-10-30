@@ -28,7 +28,10 @@ export class MailService {
         const usuarios = await this.prisma.usuario.findMany({
           select: { correo: true }
         });
-        destinatarios = usuarios.map(u => u.correo);
+
+        destinatarios = usuarios.map(
+          (u: { correo: string }) => u.correo
+        );
       } else {
         destinatarios = [emailDestino];
       }
