@@ -175,7 +175,7 @@ export class VocabularioService {
         select: { palabra: true, definicion: true }
       });
 
-      const definicionesUsadas = vocabularioUsado.map(v => v.definicion);
+      const definicionesUsadas = vocabularioUsado.map((v: any) => v.definicion);
 
       // Si la palabra actual ya se jugó, o su definición es idéntica a una ya vista
       if (palabrasUsadas.includes(vocabulario.palabra) || definicionesUsadas.includes(vocabulario.definicion)) {
