@@ -18,7 +18,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend principal (NestJS)
+ # Backend principal (NestJS)
   backend:
     image: miracle-backend
     build:
@@ -26,6 +26,8 @@ services:
       dockerfile: Dockerfile
     container_name: nestjs_backend
     restart: always
+    env_file:
+      - ./backend/.env   # <--- ¡ESTA ES LA LÍNEA MÁGICA QUE FALTABA!
     environment:
       PORT: 3000
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}
@@ -40,7 +42,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
   # Microservicio especializado (Python / FastAPI)
   python-service:
     image: miracle-python

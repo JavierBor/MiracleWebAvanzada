@@ -1,51 +1,71 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Necesario para los ngModel
-import { Router } from '@angular/router';
-import { IonContent } from '@ionic/angular';
-import { HeaderComponent } from '../../components/header/header.component'; // Ajusta la ruta a tu header
+import { ToastController } from '@ionic/angular'; 
+import { HeaderComponent } from '../../components/header/header.component';
 
 @Component({
   selector: 'app-admin-alertas',
   templateUrl: './admin-alertas.component.html',
   styleUrls: ['./admin-alertas.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonContent,
-    HeaderComponent
-  ],
+  imports: [CommonModule, FormsModule, HeaderComponent], // Ya no está IonicModule
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AdminAlertasComponent {
-  
-  tipoEnvio: string = 'todos';
-  correos: string = '';
-  asunto: string = '';
-  mensaje: string = '';
+  tipoEnvio: string = 'todos'; // Por defecto estará marcado en masivo
+  emailDestino: string = '';
+  asuntoAlerta: string = '';
+  mensajeAlerta: string = '';
+  cargando: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private toastController: ToastController
+  ) {}
 
-  // Controla si desactivan el modo admin desde el header para sacarlos al dashboard
-  handleAdminModeChange(isAdmin: boolean) {
-    if (!isAdmin) {
-      this.router.navigate(['/dashboard']);
+  async enviarAlerta() {
+    if (this.tipoEnvio === 'individuales' && !this.emailDestino) {
+      this.mostrarToast('Por favor, ingresa el correo del destinatario.', 'warning');
+      return;
     }
+    if (!this.asuntoAlerta || !this.mensajeAlerta) {
+      this.mostrarToast('Por favor, completa el asunto y el mensaje.', 'warning');
+      return;
+    }
+
+    this.cargando = true;
+
+    const payload = {
+      email: this.tipoEnvio === 'todos' ? 'todos' : this.emailDestino,
+      asunto: this.asuntoAlerta,
+      mensaje: this.mensajeAlerta
+    };
+
+    this.http.post('http://localhost:3000/mail/alerta', payload).subscribe({
+      next: () => {
+        this.mostrarToast('✅ Alerta enviada con éxito.', 'success');
+        this.emailDestino = '';
+        this.asuntoAlerta = '';
+        this.mensajeAlerta = '';
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error enviando alerta:', err);
+        this.mostrarToast('❌ Hubo un error al enviar la alerta.', 'danger');
+        this.cargando = false;
+      }
+    });
   }
 
-  enviarAlerta() {
-    console.log('Enviando alerta:', {
-      tipo: this.tipoEnvio,
-      correos: this.correos,
-      asunto: this.asunto,
-      mensaje: this.mensaje
+  async mostrarToast(mensaje: string, color: string) {
+    const toast = await this.toastController.create({
+      message: mensaje,
+      duration: 3000,
+      color: color,
+      position: 'bottom'
     });
-
-    // Aquí puedes integrar tu servicio para conectar con el backend y mandar la alerta.
-    alert('¡Alerta enviada con éxito!');
-    
-    // Opcional: limpiar formulario o redirigir al menú admin
-    this.router.navigate(['/admin']);
+    await toast.present();
   }
 }

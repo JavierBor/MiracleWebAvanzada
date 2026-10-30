@@ -4,6 +4,7 @@ import { AppModule } from './app.module.js';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 

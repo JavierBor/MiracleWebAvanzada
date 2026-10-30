@@ -6,9 +6,10 @@ import { AuthModule } from './auth/auth.module.js';
 import { VocabularioModule } from './juegos/vocabulario.module.js';
 import { ForoModule } from './foro/foro.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { MailModule } from './mail/mail.module.js';
 
 @Module({
-  imports: [AuthModule, VocabularioModule, ForoModule, PrismaModule],
+  imports: [AuthModule, VocabularioModule, ForoModule, PrismaModule, MailModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
