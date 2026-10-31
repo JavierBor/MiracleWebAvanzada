@@ -96,7 +96,7 @@ Cada vez que se realiza un push a la rama principal, el pipeline ejecuta automá
 * Análisis estático de seguridad y detección de dependencias vulnerables o secretos expuestos.
 * Construcción de las imágenes Docker.
 * Despliegue automatizado en el ambiente de Staging.
-* Enlace al ambiente de staging:
+* Enlace al ambiente de staging: https://miracle-frontend-jjzd.onrender.com/
 * Enlace al prototipo (Figma): https://www.figma.com/design/l8kGBlot0CO8z5RRXilRMD/MiracleWebAvanzada?node-id=0-1&t=oa9UOCwP1wDBTcsW-1
 
 # Entrega parcial 1 Miracle
