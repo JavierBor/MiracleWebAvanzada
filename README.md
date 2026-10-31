@@ -30,7 +30,7 @@ La aplicación está diseñada para ofrecer un entorno de práctica integral, in
 *   **Actividades interactivas de aprendizaje:** Dinámicas de juego estilo "Kahoot" (selección de alternativas) y ejercicios de escritura libre para evaluar gramática y ortografía, abarcando un mínimo de un juego por unidad de aprendizaje de cada asignatura.
 *   **Foro de consultas:** Un espacio colaborativo donde los estudiantes pueden enviar sus preguntas y dudas, las cuales podrán ser respondidas por los profesores u otros usuarios de la comunidad que conozcan del tema.
 *   **Panel de administración y moderación:** Herramientas para que el administrador pueda gestionar la comunidad, incluyendo la capacidad de suspender temporal o permanentemente a los usuarios que hagan un mal uso del foro.
-*   **Sistema de avisos globales:** Funcionalidad para que la administración envíe notificaciones informativas a todos los usuarios, comunicando eventos como ventanas de mantenimiento del sistema o nuevas actualizaciones.
+*   **Sistema de avisos globales:** Funcionalidad para que la administración envíe notificaciones informativas a todos los usuarios, comunicando eventos como ventanas de mantenimiento del sistema o nuevas actualizaciones mediante el correo que especificaron al momento de crear la cuenta.
 
 ## 4. Arquitectura y Tecnologías Utilizadas
 
@@ -43,7 +43,7 @@ El proyecto se construye sobre una arquitectura moderna, modular y multiplatafor
 
 ## 5. Fuente de Información Web
 
-Para enriquecer la experiencia de aprendizaje, el sistema consumirá información desde una fuente externa (API de diccionario, como Free Dictionary API). Esta fuente de información web se utilizará para extraer dinámicamente definiciones, ejemplos de uso y archivos de audio con la pronunciación real de las palabras, integrando estos datos directamente en las actividades interactivas.
+Para enriquecer la experiencia de aprendizaje, el sistema consumirá información desde una fuente externa (API de diccionario, como DATAMUSE). Esta fuente de información web se utilizará para extraer dinámicamente definiciones y archivos de audio con la pronunciación real de las palabras, integrando estos datos directamente en las actividades interactivas.
 
 ## 6. Capacidad Adaptativa o Inteligente
 
@@ -72,6 +72,19 @@ El proyecto requiere variables de entorno para funcionar correctamente.
 * En la raíz del proyecto (y/o en las carpetas de los servicios), encontrarás un archivo llamado .env.example.
 * Crea una copia de este archivo, renómbralo a .env y completa los valores necesarios (por ejemplo, credenciales básicas de desarrollo para PostgreSQL). (Nota: Nunca subas el archivo .env real al repositorio).
 
+### Configuración del Sistema de Alertas por Correo
+
+El sistema utiliza Nodemailer en el backend de NestJS para el envío de alertas individuales y masivas a través de SMTP (Gmail). Debes configurar las siguientes variables de entorno en el archivo .env del backend (o en el panel de control de tu plataforma de despliegue como Render):
+
+| Variable | Descripción | Ejemplo |
+| :--- | :--- | :--- |
+| SMTP_HOST | Servidor SMTP proveedor | smtp.gmail.com |
+| SMTP_PORT | Puerto de conexión SMTP | 587 |
+| SMTP_USER | Correo electrónico del administrador emisor | tu-correo@gmail.com |
+| SMTP_PASS | Contraseña de aplicación de Gmail de 16 dígitos | abcd efgh ijkl mnop |
+
+> *Nota importante sobre Gmail:* Por seguridad, Google no permite usar tu contraseña personal directamente en aplicaciones de terceros. Debes generar una *Contraseña de aplicación* desde la configuración de seguridad de tu cuenta de Google (Verificación en dos pasos activa requerida) y utilizar esos 16 caracteres en SMTP_PASS.
+
 **3. Ejecución con Docker Compose:**
 Para construir las imágenes y levantar todos los servicios (Frontend, NestJS, FastAPI y PostgreSQL), ejecuta el siguiente comando en la raíz del proyecto:
 ```
@@ -85,6 +98,12 @@ Una vez que los contenedores estén en ejecución, puedes acceder a los servicio
 * Backend Principal (NestJS): http://localhost:3000
 * Servicio Adaptativo (Python/FastAPI): http://localhost:8000
 * Base de Datos (PostgreSQL): localhost:5432
+
+**5. Cuenta de admin para pruebas**
+Al momento de correr los servicios mediante el comando del docker, el backend crea un usuario con rol de admin, con el fin de poder probar sus funcionalidades, los datos de la cuenta son:
+
+* **Correo:** admin@miracle.com
+* **Contraseña:** admin123
 
 ## 8. Pipeline DevSecOps y Despliegue
 El proyecto integra un pipeline de integración y despliegue continuo (CI/CD) utilizando GitHub Actions.
