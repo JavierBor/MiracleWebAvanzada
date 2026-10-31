@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
+import { environment } from '../../environments/environment'; // Importamos el entorno dinámico
 
 export interface AuthResponse {
   mensaje: string;
@@ -17,7 +18,8 @@ export interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:3000/auth';
+  // Se concatena la variableapiUrl del environment según el entorno activo
+  private readonly apiUrl = `${environment.apiUrl}/auth`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -36,6 +38,8 @@ export class AuthService {
   private guardarSesion(res: AuthResponse): void {
     localStorage.setItem('miracle_token', res.access_token);
     localStorage.setItem('miracle_user', JSON.stringify(res.usuario));
+    // Guardamos también como 'user' para compatibilidad con HeaderComponent
+    localStorage.setItem('user', JSON.stringify(res.usuario));
   }
 
   obtenerUsuarioActual() {
@@ -46,5 +50,7 @@ export class AuthService {
   cerrarSesion(): void {
     localStorage.removeItem('miracle_token');
     localStorage.removeItem('miracle_user');
+    localStorage.removeItem('user');
+    localStorage.removeItem('miracle_admin_mode');
   }
 }
