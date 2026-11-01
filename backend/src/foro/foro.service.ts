@@ -1,6 +1,6 @@
 import { Injectable, GatewayTimeoutException, InternalServerErrorException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { PrismaService } from '../prisma/prisma.service.js'; // Ajusta la ruta si es necesario
+import { PrismaService } from '../prisma/prisma.service.js';
 import { firstValueFrom, catchError, timeout } from 'rxjs';
 
 @Injectable()
@@ -10,8 +10,12 @@ export class ForoService {
     private readonly httpService: HttpService,
   ) {}
 
+  private get pythonUrl(): string {
+    return process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
+  }
+
   async buscarPublicacionesInteligente(query: string) {
-    // 1. Obtener el corpus desde PostgreSQL (ajusta 'publicacionForo' al nombre real de tu tabla en Prisma)
+    // 1. Obtener el corpus desde PostgreSQL
     const publicaciones = await this.prisma.publicacionForo.findMany({
       select: { id: true, contenido: true }
     });
@@ -22,13 +26,10 @@ export class ForoService {
       content: pub.contenido
     }));
 
-    // 3. Obtener la URL de Python (definida en tu docker-compose)
-    const pythonUrl = process.env.PYTHON_SERVICE_URL || 'http://python-service:8000';
-
     try {
-      // 4. Mecanismo de consulta con Timeout exigido por la rúbrica (5 segundos)
+      // 3. Mecanismo de consulta con Timeout de 5 segundos
       const response = await firstValueFrom(
-        this.httpService.post(`${pythonUrl}/api/foro/buscar`, { query, documents }).pipe(
+        this.httpService.post(`${this.pythonUrl}/api/foro/buscar`, { query, documents }).pipe(
           timeout(5000), 
           catchError(() => {
             throw new GatewayTimeoutException('El motor de búsqueda (Python) no responde a tiempo.');
@@ -38,7 +39,7 @@ export class ForoService {
 
       const searchResult = response.data;
 
-      // 5. Cruzar resultados de Python con los datos reales de la BD
+      // 4. Cruzar resultados de Python con los datos reales de la BD
       const resultadosEnriquecidos = searchResult.results.map((resultadoPython: any) => {
         const pubOriginal = publicaciones.find((p: any) => p.id === resultadoPython.id);
         return {
@@ -47,7 +48,7 @@ export class ForoService {
         };
       });
 
-      // 6. Retornar resultados listos para Angular con los metadatos exigidos
+      // 5. Retornar resultados listos para Angular con metadatos
       return {
         metadatos_busqueda: {
           tiempo_procesamiento_ms: searchResult.processing_time_ms,
@@ -64,22 +65,30 @@ export class ForoService {
   }
 
   async crearPublicacionDb(datos: any) {
-    // Según tu schema.prisma actual, la tabla PublicacionForo requiere al menos un usuarioId y el contenido.
-    // Concatenamos el título y el contenido para que Python tenga todo el texto enriquecido para buscar.
     const contenidoCompleto = `[${datos.curso}] ${datos.titulo} - ${datos.contenido}`;
 
+    // 1. Buscar dinámicamente el primer usuario que exista en PostgreSQL (Staging o Local)
+    const usuarioExistente = await this.prisma.usuario.findFirst();
+
+    if (!usuarioExistente) {
+      throw new InternalServerErrorException(
+        'No hay usuarios registrados en la base de datos para vincular la publicación.'
+      );
+    }
+
+    // 2. Insertar la publicación asignando el usuarioId real
     return await this.prisma.publicacionForo.create({
       data: {
         contenido: contenidoCompleto,
         estado: 'ACTIVA',
-        usuarioId: 'c64a3e1d-5fbb-4a61-bf31-5926493ee564' 
+        usuarioId: usuarioExistente.id
       }
     });
   }
 
   async obtenerTodasLasPublicaciones() {
     return await this.prisma.publicacionForo.findMany({
-      orderBy: { fecha_creacion: 'desc' }
+      orderBy: { id: 'desc' }
     });
   }
 }
