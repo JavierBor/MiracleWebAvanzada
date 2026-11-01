@@ -105,8 +105,6 @@ Al momento de correr los servicios mediante el comando del docker, el backend cr
 * **Correo:** admin@miracle.com
 * **Contraseña:** admin123
 
-
-
 **6. Ejecución local con Docker**
 
 El frontend utiliza el archivo `environment.prod.ts` durante la compilación de la imagen Docker.
@@ -170,7 +168,25 @@ docker compose down
 docker compose up --build
 ```
 
+### Resumen de Direcciones por Entorno
 
+| Componente | Dirección Local (Docker / CLI) | Dirección Staging (Render) |
+| :--- | :--- | :--- |
+| **Frontend Web** | `http://localhost:8100` | `https://miracle-frontend-jjzd.onrender.com` |
+| **Backend NestJS** | `http://localhost:3000` | `https://miracle-staging.onrender.com` |
+| **Microservicio Python** | `http://localhost:8000` | `https://miracle-python-service.onrender.com` |
+| **PostgreSQL** | `localhost:5432` | Conexión interna Render (`miracle-db-v2`) |
+
+---
+
+### Asegurar que los Servicios en Render estén Activos
+
+Los planes gratuitos de Render suspenden (*spin down*) los Web Services tras 15 minutos de inactividad. Para asegurar la comunicación completa en Staging:
+
+1. **Warming-up / Despertar Manual:** Antes de realizar pruebas en la interfaz, abre los endpoints de salud en el navegador para activar los servicios en caso de reposo:
+   * **Backend:** `https://miracle-staging.onrender.com/health`
+   * **Python:** `https://miracle-python-service.onrender.com/health`
+2. **Resiliencia en NestJS:** El backend NestJS cuenta con un *timeout* estricto de 5 segundos (`timeout(5000)`) e intercepción de errores hacia el microservicio de Python para evitar caídas en cascada si este demora en despertar.
 
 ## 8. Pipeline DevSecOps y Despliegue
 El proyecto integra un pipeline de integración y despliegue continuo (CI/CD) utilizando GitHub Actions.
