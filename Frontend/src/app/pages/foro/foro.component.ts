@@ -1,10 +1,16 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
+
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectorRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { IonHeader, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
+
 import {
   homeOutline,
   personCircleOutline,
@@ -18,6 +24,7 @@ import {
 } from 'ionicons/icons';
 
 import { HeaderComponent } from '../../components/header/header.component';
+import { environment } from '../../../environments/environment';
 
 interface PostForo {
   id: number;
@@ -49,6 +56,10 @@ interface PostForo {
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ForoComponent {
+
+  // URL del backend según el entorno de Angular
+  private readonly apiUrl = `${environment.apiUrl}/api/foro`;
+
   showAccountMenu = false;
   isAdminMode = false;
 
@@ -66,11 +77,10 @@ export class ForoComponent {
   publicaciones: PostForo[] = [];
   publicacionesFiltradas: PostForo[] = [];
 
-  // Inyectamos ChangeDetectorRef correctamente
   constructor(
-    private router: Router, 
+    private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef 
+    private cdr: ChangeDetectorRef
   ) {
     addIcons({
       homeOutline,
@@ -85,70 +95,30 @@ export class ForoComponent {
     });
   }
 
-  // Usamos ionViewWillEnter en lugar de ngOnInit para asegurar que Ionic siempre actualice la vista
+  // Actualiza el foro cada vez que se entra a la vista
   ionViewWillEnter() {
     this.cargarHistorialForo();
   }
 
-  // Trae las publicaciones desde PostgreSQL vía NestJS
+  // ==========================================
+  // CARGAR PUBLICACIONES DESDE POSTGRESQL
+  // ==========================================
+
   cargarHistorialForo() {
-    this.http.get('http://localhost:3000/api/foro/todas')
+    this.http.get<any[]>(`${this.apiUrl}/todas`)
       .subscribe({
-        next: (res: any) => {
+        next: (res) => {
           this.publicaciones = res.map((post: any) => {
             let cursoStr = 'Foro';
             let tituloStr = 'Consulta';
             let contenidoStr = post.contenido;
 
-            // Se corrigió el regex que estaba cortado en varias líneas
-            const match = post.contenido.match(/\[(.*?)\] (.*?) - (.*)/);
-            if (match) {
-              cursoStr = match[1];
-              tituloStr = match[2];
-              contenidoStr = match[3];
-            }
+            // Separar curso, título y contenido
+            // Formato: [ING-II] Título - Contenido
+            const match = post.contenido.match(
+              /^\[(.*?)\] (.*?) - ([\s\S]*)$/
+            );
 
-            return {
-              id: post.id,
-              inicial: 'U', 
-              autor: 'Estudiante Miracle',
-              tiempo: 'Historial',
-              curso: cursoStr,
-              categoria: 'General',
-              titulo: tituloStr,
-              contenido: contenidoStr
-            };
-          });
-          
-          if (this.terminoBusqueda.trim() === '') {
-            this.publicacionesFiltradas = this.publicaciones;
-          }
-
-          // Forzamos la detección de cambios
-          this.cdr.detectChanges();
-        },
-        error: (err) => console.error('Error cargando el historial del foro', err)
-      });
-  }
-
-  // --- MOTOR DE BÚSQUEDA INTELIGENTE ---
-  buscarEnForo() {
-    if (this.terminoBusqueda.trim() === '') {
-      this.metadatosBusqueda = null;
-      this.publicacionesFiltradas = this.publicaciones;
-      this.cdr.detectChanges();
-      return;
-    }
-
-    this.http.get(`http://localhost:3000/api/foro/buscar?q=${this.terminoBusqueda}`)
-      .subscribe({
-        next: (res: any) => {
-          this.publicacionesFiltradas = res.resultados.map((post: any) => {
-            let cursoStr = 'Foro';
-            let tituloStr = 'Consulta';
-            let contenidoStr = post.contenido;
-
-            const match = post.contenido.match(/\[(.*?)\] (.*?) - (.*)/);
             if (match) {
               cursoStr = match[1];
               tituloStr = match[2];
@@ -159,25 +129,97 @@ export class ForoComponent {
               id: post.id,
               inicial: 'U',
               autor: 'Estudiante Miracle',
-              tiempo: 'Búsqueda',
+              tiempo: 'Historial',
               curso: cursoStr,
               categoria: 'General',
               titulo: tituloStr,
-              contenido: contenidoStr,
-              score_relevancia: post.score_relevancia
+              contenido: contenidoStr
             };
           });
+
+          if (this.terminoBusqueda.trim() === '') {
+            this.publicacionesFiltradas = this.publicaciones;
+          }
+
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(
+            'Error cargando el historial del foro',
+            err
+          );
+        }
+      });
+  }
+
+  // ==========================================
+  // MOTOR DE BÚSQUEDA INTELIGENTE
+  // ==========================================
+
+  buscarEnForo() {
+    const termino = this.terminoBusqueda.trim();
+
+    if (termino === '') {
+      this.metadatosBusqueda = null;
+      this.publicacionesFiltradas = this.publicaciones;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.http.get<any>(`${this.apiUrl}/buscar`, {
+      params: { q: termino }
+    })
+      .subscribe({
+        next: (res) => {
+          this.publicacionesFiltradas = res.resultados.map(
+            (post: any) => {
+              let cursoStr = 'Foro';
+              let tituloStr = 'Consulta';
+              let contenidoStr = post.contenido;
+
+              const match = post.contenido.match(
+                /^\[(.*?)\] (.*?) - ([\s\S]*)$/
+              );
+
+              if (match) {
+                cursoStr = match[1];
+                tituloStr = match[2];
+                contenidoStr = match[3];
+              }
+
+              return {
+                id: post.id,
+                inicial: 'U',
+                autor: 'Estudiante Miracle',
+                tiempo: 'Búsqueda',
+                curso: cursoStr,
+                categoria: 'General',
+                titulo: tituloStr,
+                contenido: contenidoStr,
+                score_relevancia: post.score_relevancia
+              };
+            }
+          );
+
           this.metadatosBusqueda = res.metadatos_busqueda;
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Error en búsqueda inteligente', err);
+          console.error(
+            'Error en búsqueda inteligente',
+            err
+          );
+
           this.publicacionesFiltradas = [];
           this.metadatosBusqueda = null;
           this.cdr.detectChanges();
         }
       });
   }
+
+  // ==========================================
+  // MENÚ DE CUENTA
+  // ==========================================
 
   toggleAccountMenu() {
     this.showAccountMenu = !this.showAccountMenu;
@@ -193,6 +235,10 @@ export class ForoComponent {
     this.router.navigate(['/login']);
   }
 
+  // ==========================================
+  // MODAL DE NUEVA PUBLICACIÓN
+  // ==========================================
+
   abrirModalNuevaPublicacion() {
     this.mostrarModalNuevo = true;
   }
@@ -203,13 +249,21 @@ export class ForoComponent {
     this.nuevoContenido = '';
   }
 
+  // ==========================================
+  // CREAR PUBLICACIÓN EN POSTGRESQL
+  // ==========================================
+
   crearPublicacion() {
-    if (!this.nuevoTitulo.trim() || !this.nuevoContenido.trim()) {
+    if (
+      !this.nuevoTitulo.trim() ||
+      !this.nuevoContenido.trim()
+    ) {
       return;
     }
 
-    const nombreAutor = this.nuevoAutor.trim() || 'Estudiante Miracle';
-    
+    const nombreAutor =
+      this.nuevoAutor.trim() || 'Estudiante Miracle';
+
     const nuevaPublicacion = {
       autor: nombreAutor,
       curso: this.nuevoCurso,
@@ -218,11 +272,14 @@ export class ForoComponent {
       contenido: this.nuevoContenido.trim()
     };
 
-    // Petición HTTP real hacia NestJS
-    this.http.post('http://localhost:3000/api/foro/crear', nuevaPublicacion)
+    // Petición HTTP hacia NestJS
+    this.http.post<any>(
+      `${this.apiUrl}/crear`,
+      nuevaPublicacion
+    )
       .subscribe({
-        next: (res: any) => {
-          const postGuardado = {
+        next: (res) => {
+          const postGuardado: PostForo = {
             id: res.id,
             inicial: nombreAutor.charAt(0).toUpperCase(),
             autor: nombreAutor,
@@ -234,25 +291,43 @@ export class ForoComponent {
           };
 
           this.publicaciones.unshift(postGuardado);
-          
+
           if (this.terminoBusqueda.trim() === '') {
             this.publicacionesFiltradas = this.publicaciones;
           }
-          
+
           this.cerrarModalNuevaPublicacion();
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Error guardando en la base de datos', err);
-          alert('Hubo un error al guardar tu publicación. Asegúrate de tener un usuario con ID 1 en Prisma Studio.');
+          console.error(
+            'Error guardando en la base de datos',
+            err
+          );
+
+          alert(
+            'No se pudo guardar la publicación. Inténtalo nuevamente.'
+          );
         }
       });
   }
 
+  // ==========================================
+  // ELIMINAR PUBLICACIÓN DE LA VISTA
+  // ==========================================
+
   eliminarPublicacion(id: number, event: Event) {
     event.stopPropagation();
-    this.publicaciones = this.publicaciones.filter(p => p.id !== id);
-    this.publicacionesFiltradas = this.publicacionesFiltradas.filter(p => p.id !== id);
+
+    this.publicaciones = this.publicaciones.filter(
+      p => p.id !== id
+    );
+
+    this.publicacionesFiltradas =
+      this.publicacionesFiltradas.filter(
+        p => p.id !== id
+      );
+
     this.cdr.detectChanges();
   }
 }
