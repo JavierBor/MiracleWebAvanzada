@@ -8,9 +8,20 @@ import { ForoModule } from './foro/foro.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { MailModule } from './mail/mail.module.js';
 
+// 1. Importar el controlador y el servicio de Admin
+import { AdminController } from './admin/admin.controller.js';
+import { AdminService } from './admin/admin.service.js';
+
 @Module({
   imports: [AuthModule, VocabularioModule, ForoModule, PrismaModule, MailModule],
-  controllers: [AppController],
-  providers: [AppService, PrismaService],
+  controllers: [
+    AppController,
+    AdminController
+  ],
+  providers: [
+    AppService, 
+    PrismaService, 
+    AdminService
+  ],
 })
 export class AppModule {}

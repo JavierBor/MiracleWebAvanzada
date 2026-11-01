@@ -105,6 +105,73 @@ Al momento de correr los servicios mediante el comando del docker, el backend cr
 * **Correo:** admin@miracle.com
 * **Contraseña:** admin123
 
+
+
+**6. Ejecución local con Docker**
+
+El frontend utiliza el archivo `environment.prod.ts` durante la compilación de la imagen Docker.
+
+Por defecto, este archivo contiene la URL correspondiente al backend desplegado en el entorno de **staging**.
+
+```ts
+export const environment = {
+  production: true,
+  apiUrl: 'https://miracle-staging.onrender.com'
+};
+```
+
+Si se desea ejecutar todo el proyecto de manera local utilizando Docker, es necesario modificar temporalmente la URL del backend en el archivo:
+
+```text
+Frontend/src/environments/environment.prod.ts
+```
+
+y reemplazar la URL de staging por la dirección local del backend:
+
+```ts
+export const environment = {
+  production: true,
+  apiUrl: 'http://localhost:3000'
+};
+```
+
+Luego de realizar este cambio, se deben reconstruir las imágenes Docker para que Angular genere nuevamente el frontend utilizando la nueva configuración.
+
+Desde la raíz del proyecto ejecutar:
+
+```bash
+docker compose down
+docker compose up --build
+```
+
+Una vez levantados los contenedores, el frontend utilizará el backend local disponible en:
+
+```text
+http://localhost:3000
+```
+
+> **Importante:** Si la imagen Docker ya fue construida anteriormente, modificar únicamente `environment.prod.ts` no actualizará automáticamente la URL utilizada por el frontend. Es necesario reconstruir la imagen utilizando `docker compose up --build`.
+
+### Volver al entorno de staging
+
+Para volver a utilizar el backend desplegado en Render, restaurar la URL original en `environment.prod.ts`:
+
+```ts
+export const environment = {
+  production: true,
+  apiUrl: 'https://miracle-staging.onrender.com'
+};
+```
+
+y reconstruir nuevamente los contenedores:
+
+```bash
+docker compose down
+docker compose up --build
+```
+
+
+
 ## 8. Pipeline DevSecOps y Despliegue
 El proyecto integra un pipeline de integración y despliegue continuo (CI/CD) utilizando GitHub Actions.
 
