@@ -8,7 +8,15 @@ from fastapi import HTTPException
 from deep_translator import MyMemoryTranslator
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from models import ForumDocument, SearchResult, SearchResponse
+import random
+from models import (
+    ForumDocument,
+    SearchResult,
+    SearchResponse,
+    AdaptiveRequest,
+    AdaptiveResponse,
+    NivelDificultad,
+)
 
 
 # --- 1. DICCIONARIO Y TRADUCCIÓN ---
@@ -185,3 +193,118 @@ def evaluate_search_engine(documents: list[ForumDocument], test_cases: list[dict
         "valid_records_percentage": round((successful_queries / num_tests) * 100, 2) if num_tests > 0 else 0.0,
         "total_test_cases": num_tests
     }
+
+# --- 3. MOTOR ADAPTATIVO DE DIFICULTAD (DDA - VERB TRANSFORMER) ---
+
+
+BANCO_VERBOS_DDA = [
+    # Nivel Normal (racha 0-4): verbos regulares de conjugación directa (-ed / -d)
+    {"base": "play", "past": ["played"], "level": "Normal"},
+    {"base": "work", "past": ["worked"], "level": "Normal"},
+    {"base": "study", "past": ["studied"], "level": "Normal"},
+    {"base": "walk", "past": ["walked"], "level": "Normal"},
+    {"base": "talk", "past": ["talked"], "level": "Normal"},
+    {"base": "open", "past": ["opened"], "level": "Normal"},
+    {"base": "clean", "past": ["cleaned"], "level": "Normal"},
+    {"base": "help", "past": ["helped"], "level": "Normal"},
+    {"base": "watch", "past": ["watched"], "level": "Normal"},
+    {"base": "visit", "past": ["visited"], "level": "Normal"},
+    # Nivel Difícil (racha 5-9): verbos irregulares de uso cotidiano
+    {"base": "go", "past": ["went"], "level": "Difícil"},
+    {"base": "eat", "past": ["ate"], "level": "Difícil"},
+    {"base": "see", "past": ["saw"], "level": "Difícil"},
+    {"base": "buy", "past": ["bought"], "level": "Difícil"},
+    {"base": "think", "past": ["thought"], "level": "Difícil"},
+    {"base": "speak", "past": ["spoke"], "level": "Difícil"},
+    {"base": "write", "past": ["wrote"], "level": "Difícil"},
+    {"base": "break", "past": ["broke"], "level": "Difícil"},
+    {"base": "begin", "past": ["began"], "level": "Difícil"},
+    {"base": "find", "past": ["found"], "level": "Difícil"},
+    # Nivel Experto (racha 10+): verbos irregulares complejos o invariables
+    {"base": "teach", "past": ["taught"], "level": "Experto"},
+    {"base": "catch", "past": ["caught"], "level": "Experto"},
+    {"base": "bring", "past": ["brought"], "level": "Experto"},
+    {"base": "forget", "past": ["forgot"], "level": "Experto"},
+    {"base": "freeze", "past": ["froze"], "level": "Experto"},
+    {"base": "understand", "past": ["understood"], "level": "Experto"},
+    {"base": "withdraw", "past": ["withdrew"], "level": "Experto"},
+    {"base": "shake", "past": ["shook"], "level": "Experto"},
+    {"base": "steal", "past": ["stole"], "level": "Experto"},
+    {"base": "broadcast", "past": ["broadcast", "broadcasted"], "level": "Experto"},
+]
+
+
+def determinar_politica_dda(req: AdaptiveRequest) -> tuple[NivelDificultad, bool, str]:
+    if req.modo_manual and req.dificultad_fija:
+        return (
+            req.dificultad_fija,
+            False,
+            f"Modo manual activo: dificultad fijada por el usuario en nivel {req.dificultad_fija}."
+        )
+
+    racha_efectiva = 0 if req.ultimo_resultado is False else req.racha_actual
+
+    if racha_efectiva >= 10:
+        nivel: NivelDificultad = "Experto"
+        explicacion = (
+            f"Nivel Experto activado (racha de {racha_efectiva} aciertos): "
+            "se seleccionan verbos irregulares complejos o invariables."
+        )
+    elif racha_efectiva >= 5:
+        nivel = "Difícil"
+        explicacion = (
+            f"Nivel Difícil activado (racha de {racha_efectiva} aciertos): "
+            "se priorizan verbos irregulares de uso frecuente."
+        )
+    else:
+        nivel = "Normal"
+        if req.ultimo_resultado is False:
+            explicacion = (
+                "Nivel Normal activado: tras un error en la ronda anterior, "
+                "la racha se reinició a 0 para reforzar verbos regulares."
+            )
+        else:
+            explicacion = (
+                f"Nivel Normal activo (racha actual: {racha_efectiva}/5): "
+                "verbos regulares para consolidar la regla base (-ed)."
+            )
+
+    return nivel, True, explicacion
+
+
+async def generar_siguiente_verbo_adaptativo(req: AdaptiveRequest) -> AdaptiveResponse:
+    nivel_activo, es_adaptativo, explicacion = determinar_politica_dda(req)
+    usados_lower = {v.strip().lower() for v in req.verbos_usados}
+
+    candidatos = [
+        v for v in BANCO_VERBOS_DDA
+        if v["level"] == nivel_activo and v["base"] not in usados_lower
+    ]
+    if not candidatos:
+        candidatos = [v for v in BANCO_VERBOS_DDA if v["level"] == nivel_activo]
+
+    elegido = random.choice(candidatos)
+
+    pista_espanol: Optional[str] = None
+    fonetica: Optional[str] = None
+    fuente = "Motor DDA Miracle"
+
+    try:
+        datos_web = await obtener_datos_diccionario(elegido["base"])
+        pista_espanol = datos_web.definicion
+        fonetica = datos_web.fonetica
+        fuente = "Motor DDA Miracle + Datamuse API + MyMemory"
+    except HTTPException:
+        # Degradación controlada si la API externa falla o excede el timeout
+        fuente = "Motor DDA Miracle (respaldo local)"
+
+    return AdaptiveResponse(
+        verbo_base=elegido["base"].upper(),
+        formas_pasado=elegido["past"],
+        nivel_activo=nivel_activo,
+        es_adaptativo=es_adaptativo,
+        explicacion_adaptacion=explicacion,
+        pista_espanol=pista_espanol,
+        fonetica=fonetica,
+        fuente=fuente,
+    )

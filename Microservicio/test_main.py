@@ -145,3 +145,82 @@ def test_evaluar_foro_sin_documentos():
     data = response.json()
     assert data["average_precision"] == 0.0
     assert data["average_latency_ms"] == 0.0
+
+
+# --- 5. PRUEBAS DEL MOTOR ADAPTATIVO (DDA) ---
+@patch("services.obtener_datos_diccionario", new_callable=AsyncMock)
+def test_adaptativo_nivel_normal_inicial(mock_diccionario):
+    """Racha 0 debe asignar nivel Normal con verbos regulares."""
+    mock_diccionario.return_value = DefinicionLimpia(
+        palabra="play",
+        fonetica="pleɪ",
+        audio_url=None,
+        categoria_gramatical="verbo",
+        definicion="Jugar.",
+    )
+    response = client.post(
+        "/api/adaptativo/siguiente-verbo",
+        json={"racha_actual": 0, "verbos_usados": []}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["nivel_activo"] == "Normal"
+    assert data["es_adaptativo"] is True
+    assert "explicacion_adaptacion" in data
+
+
+@patch("services.obtener_datos_diccionario", new_callable=AsyncMock)
+def test_adaptativo_sube_a_dificil_y_experto(mock_diccionario):
+    """Racha 5 sube a Difícil y racha 10 sube a Experto."""
+    mock_diccionario.return_value = DefinicionLimpia(
+        palabra="go",
+        fonetica="ɡoʊ",
+        audio_url=None,
+        categoria_gramatical="verbo",
+        definicion="Ir.",
+    )
+    res_dificil = client.post("/api/adaptativo/siguiente-verbo", json={"racha_actual": 5})
+    assert res_dificil.status_code == 200
+    assert res_dificil.json()["nivel_activo"] == "Difícil"
+
+    res_experto = client.post("/api/adaptativo/siguiente-verbo", json={"racha_actual": 10})
+    assert res_experto.status_code == 200
+    assert res_experto.json()["nivel_activo"] == "Experto"
+
+
+@patch("services.obtener_datos_diccionario", new_callable=AsyncMock)
+def test_adaptativo_reinicia_tras_error(mock_diccionario):
+    """Si ultimo_resultado es False, debe bajar a Normal aunque trajera racha alta."""
+    mock_diccionario.return_value = DefinicionLimpia(
+        palabra="work",
+        fonetica="wɜːrk",
+        audio_url=None,
+        categoria_gramatical="verbo",
+        definicion="Trabajar.",
+    )
+    response = client.post(
+        "/api/adaptativo/siguiente-verbo",
+        json={"racha_actual": 8, "ultimo_resultado": False}
+    )
+    assert response.status_code == 200
+    assert response.json()["nivel_activo"] == "Normal"
+
+
+@patch("services.obtener_datos_diccionario", new_callable=AsyncMock)
+def test_adaptativo_control_manual_usuario(mock_diccionario):
+    """Si modo_manual=True, respeta dificultad_fija ignorando racha 0."""
+    mock_diccionario.return_value = DefinicionLimpia(
+        palabra="teach",
+        fonetica="tiːtʃ",
+        audio_url=None,
+        categoria_gramatical="verbo",
+        definicion="Enseñar.",
+    )
+    response = client.post(
+        "/api/adaptativo/siguiente-verbo",
+        json={"racha_actual": 0, "modo_manual": True, "dificultad_fija": "Experto"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["nivel_activo"] == "Experto"
+    assert data["es_adaptativo"] is False

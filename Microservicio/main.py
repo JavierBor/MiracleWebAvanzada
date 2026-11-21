@@ -4,9 +4,16 @@ from services import (
     DefinicionLimpia,
     obtener_datos_diccionario,
     search_forum_posts,
-    evaluate_search_engine
+    evaluate_search_engine,
+    generar_siguiente_verbo_adaptativo,
 )
-from models import SearchRequest, SearchResponse, ForumDocument
+from models import (
+    SearchRequest,
+    SearchResponse,
+    ForumDocument,
+    AdaptiveRequest,
+    AdaptiveResponse,
+)
 
 app = FastAPI(
     title="MIRACLE - Microservicio Adaptativo",
@@ -112,3 +119,17 @@ def evaluate_forum_search(documents: list[ForumDocument]):
         {"query": "vocabulario ingles", "expected_ids": [4, 5]}
     ]
     return evaluate_search_engine(documents, test_cases, k=3)
+
+
+# --- CAPACIDAD ADAPTATIVA (DDA) ---
+@app.post(
+    "/api/adaptativo/siguiente-verbo",
+    response_model=AdaptiveResponse,
+    summary="Calcula el siguiente desafío adaptativo según racha y control del usuario",
+    description=(
+        "Evalúa la racha actual o la preferencia manual del estudiante para ajustar "
+        "la complejidad morfológica del verbo y enriquece la pista con Datamuse."
+    ),
+)
+async def siguiente_verbo_adaptativo(request: AdaptiveRequest):
+    return await generar_siguiente_verbo_adaptativo(request)
