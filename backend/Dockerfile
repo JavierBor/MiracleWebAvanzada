@@ -1,8 +1,12 @@
 # Etapa 1: Construcción
 FROM node:22-alpine AS builder
 WORKDIR /app
+
+RUN npm install -g npm@11.19.0
+
 COPY package*.json ./
-RUN npm install
+RUN npm ci
+
 COPY . .
 RUN npx prisma generate
 RUN npm run build
