@@ -1,0 +1,193 @@
+name: DevSecOps Miracle Pipeline
+
+on: [push]
+
+jobs:
+  # ==========================================
+  # 1. CI Y SEGURIDAD
+  # ==========================================
+  construccion-y-seguridad:
+    name: Integración Continua y DevSecOps
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obtención del código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # --- FRONTEND (Angular) ---
+      - name: Instalar dependencias Frontend
+        working-directory: ./Frontend
+        run: npm ci
+
+      - name: Linting y Pruebas Frontend
+        working-directory: ./Frontend
+        run: |
+          npm run lint
+          npm run test -- --watch=false
+
+      # --- BACKEND (NestJS) ---
+      - name: Instalar dependencias Backend
+        working-directory: ./backend
+        run: |
+          npm ci
+          npx prisma generate
+
+      - name: Linting y Pruebas Backend
+        working-directory: ./backend
+        run: |
+          npm run lint
+          npm run test
+
+      # --- SERVICIO PYTHON (FastAPI) ---
+      - name: Instalar dependencias Python
+        working-directory: ./Microservicio
+        run: |
+          pip install -r requirements.txt
+          pip install pytest flake8
+
+      - name: Linting y Pruebas Python
+        working-directory: ./Microservicio
+        run: |
+          flake8 .
+          pytest
+          
+      - name: Análisis de seguridad y dependencias Python
+        working-directory: ./Microservicio
+        run: |
+          pip install bandit safety
+          bandit -r . -ll
+          safety check -r requirements.txt
+
+      # --- SEGURIDAD Y CONSTRUCCIÓN ---
+      - name: Detección de secretos expuestos
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          extra_args: --debug --only-verified
+
+      - name: Preparar variables de entorno para CI
+        env:
+          DB_USER: ${{ vars.CI_DB_USER }}
+          DB_NAME: ${{ vars.CI_DB_NAME }}
+          DB_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+        run: |
+          set -eu
+          : "${DB_USER:?Falta CI_DB_USER}"
+          : "${DB_NAME:?Falta CI_DB_NAME}"
+          : "${DB_PASSWORD:?Falta CI_DB_PASSWORD}"
+
+          printf 'DB_USER=%s\nDB_PASSWORD=%s\nDB_NAME=%s\n' \
+            "$DB_USER" "$DB_PASSWORD" "$DB_NAME" > .env
+
+          echo "NODE_ENV=test" > backend/.env
+
+      - name: Construcción de Imágenes Docker
+        run: docker compose build
+
+      - name: Pruebas de integración NestJS-FastAPI
+        env:
+          DB_USER: ${{ vars.CI_DB_USER }}
+          DB_NAME: ${{ vars.CI_DB_NAME }}
+          DB_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+        run: |
+          docker compose up -d
+          sleep 15
+
+          cd backend
+          export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}"
+          npx prisma db push
+          npm run test:e2e
+
+      - name: Detener contenedores de integración
+        if: always()
+        run: docker compose down
+      
+      - name: Análisis Trivy - Backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'miracle-backend'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          trivyignores: '.trivyignore'
+
+      - name: Análisis Trivy - Python
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'miracle-python'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          trivyignores: '.trivyignore'
+
+      - name: Análisis Trivy - Frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'miracle-frontend'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+          trivyignores: '.trivyignore'
+
+  # ==========================================
+  # 2. VALIDACIÓN DE INFRAESTRUCTURA (TERRAFORM)
+  # ==========================================
+  terraform-iac:
+    name: Validar Infraestructura (Terraform)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Inicializar Terraform
+        run: terraform init -backend=false
+
+      - name: Verificar formato (terraform fmt)
+        run: terraform fmt -check
+
+      - name: Validar configuración (terraform validate)
+        run: terraform validate
+
+      - name: Generar plan de infraestructura (terraform plan)
+        run: terraform plan -no-color
+
+  # ==========================================
+  # 3. CD - DESPLIEGUE CONTINUO A STAGING
+  # ==========================================
+  deploy-staging:
+    name: Despliegue Continuo a Staging (CD)
+    runs-on: ubuntu-latest
+    needs: [construccion-y-seguridad, terraform-iac]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Publicar / Desplegar en Ambiente de Staging
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK_URL" ]; then
+            curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL"
+            echo "Despliegue en Staging activado exitosamente."
+          else
+            echo "Modo preliminar EP1: Pipeline CD configurado. Pendiente vincular URL de Webhook en GitHub Secrets."
+          fi
