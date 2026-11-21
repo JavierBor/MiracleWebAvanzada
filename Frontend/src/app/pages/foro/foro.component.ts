@@ -7,7 +7,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient} from '@angular/common/http';
 import { IonHeader, IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 
@@ -47,7 +47,6 @@ interface PostForo {
     CommonModule,
     FormsModule,
     RouterLink,
-    HttpClientModule,
     IonHeader,
     IonContent,
     IonIcon,

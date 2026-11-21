@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { ForoService } from './foro.service.js';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 
 @Controller('api/foro')
 export class ForoController {
@@ -14,6 +15,7 @@ export class ForoController {
   }
   
   @Post('crear')
+  @UseGuards(JwtAuthGuard)
   async crearPublicacion(@Body() body: any) {
     return this.foroService.crearPublicacionDb(body);
   }

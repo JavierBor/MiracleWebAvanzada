@@ -433,6 +433,18 @@ sequenceDiagram
     F-->>U: Muestra resultado y retroalimentación
 ```
 
+##### Fundamentación del Tipo de Arquitectura Seleccionada
+
+Para el desarrollo de **Miracle**, se adoptó una **Arquitectura Híbrida Desacoplada: Backend Modular Monolítico como Orquestador (API Gateway interno) + Microservicio Especializado**, estructurada internamente mediante **Arquitectura en Capas** (Backend) y **Arquitectura Basada en Componentes Standalone** (Frontend)[cite: 2, 3].
+
+1. **¿Por qué un Backend Principal Modular (NestJS) + Microservicio Especializado (Python/FastAPI)?**
+   * **Aislamiento de cargas heterogéneas:** NestJS (Node.js) opera sobre un modelo de E/S asíncrono no bloqueante ideal para gestionar autenticación JWT, control de acceso por roles (Guards), transacciones CRUD en PostgreSQL y concurrencia de usuarios en el foro[cite: 2, 3]. Sin embargo, las operaciones intensivas de CPU —como vectorización TF-IDF con `scikit-learn`, cálculo de similitud del coseno, procesamiento lingüístico y motores de recomendación— bloquearían el *Event Loop* de Node.js[cite: 5, 13]. Delegar estas tareas a un microservicio independiente en Python (FastAPI) permite aprovechar su ecosistema científico sin degradar los tiempos de respuesta de la API principal[cite: 2, 3].
+   * **Evitar sobreingeniería de microservicios puros:** Fragmentar cada entidad (usuarios, foro, juegos, administración) en microservicios independientes introduciría latencia de red innecesaria, complejidad en transacciones distribuidas y sobrecarga operativa para un equipo de desarrollo de tres integrantes[cite: 2]. Un núcleo modular en NestJS mantiene cohesión transaccional sobre una única base de datos PostgreSQL mientras expone una fachada única al cliente[cite: 2, 3].
+
+2. **Patrones Arquitectónicos Internos por Capa:**
+   * **Frontend (Angular + Ionic + Capacitor — Basado en Componentes Standalone y Servicios Reactivos):** Separa estrictamente la capa de presentación (páginas y componentes reutilizables como `HeaderComponent`), la capa de acceso a datos (`AuthService`, `VocabularioService`, `AdminService`), la interceptación de tráfico HTTP (`authInterceptor`) y el control de navegación mediante *Functional Guards* (`authGuard`, `adminGuard`)[cite: 2, 3].
+   * **Backend Principal (NestJS — Arquitectura Modular en Capas):** Organizado por dominios funcionales (`AuthModule`, `AdminModule`, `ForoModule`, `VocabularioModule`, `MailModule`) siguiendo el flujo estricto `Guard -> Pipe/DTO -> Controller -> Service -> Prisma ORM`, garantizando separación de responsabilidades y seguridad por defecto[cite: 2, 3].
+
 ### Registro inicial de decisiones arquitectónicas.
 
 Este registro documenta las decisiones técnicas fundamentales tomadas para el diseño y desarrollo de Miracle, asegurando el cumplimiento de los requerimientos funcionales y no funcionales del proyecto.
@@ -522,6 +534,61 @@ Para garantizar la calidad de los datos del juego de vocabulario y la estabilida
 * **Trazabilidad:** Se incorporó el campo `fecha_recuperacion` en el esquema de Prisma para auditar el momento exacto de ingreso o actualización de cada registro en la base de datos.
 * **Manejo de Errores e Indisponibilidad:** Se configuró un límite estricto de tiempo (*Timeout* de 5 segundos) usando `AbortController`. Si el microservicio Python no responde a tiempo o devuelve errores (404, 502), el backend lanza excepciones HTTP controladas (como 504 Gateway Timeout), evitando bloqueos en cadena y caídas del servidor principal.
 * **Estrategia de Actualización (Caché y Upsert):** El sistema prioriza lecturas locales (Cache Hit). Sin embargo, verifica la "frescura" de los datos: si un registro no ha sido actualizado en los últimos 30 días, el backend lo marca como obsoleto, vuelve a consultar la API externa y aplica un comando `upsert` en Prisma para refrescar la información existente o crearla si no existía.
+
+#### Obtención y Validación de Contenidos Curriculares (Inglés 1 a Inglés 4)
+
+A diferencia de las plataformas comerciales genéricas, los contenidos pedagógicos de **Miracle** están alineados directamente con los programas oficiales de estudio (Syllabus) de las asignaturas de Formación General de Inglés de la **Pontificia Universidad Católica de Valparaíso (PUCV)**, abarcando la progresión desde el nivel **A1 hasta B1+** del Marco Común Europeo de Referencia (MCER)[cite: 2].
+
+##### 1. Fuente y Extracción de Contenidos Curriculares
+Los contenidos se obtuvieron a partir de los **programas oficiales de asignatura y guías de resultados de aprendizaje de Inglés I, II, III y IV de la PUCV**, complementados con material de cátedra y bancos léxicos asociados a cada unidad temática:
+
+| Asignatura PUCV | Nivel MCER Ref. | Unidades y Estructuras Gramaticales Extraídas | Actividad Interactiva Implementada | Fuente de Datos |
+| :--- | :---: | :--- | :--- | :--- |
+| **Inglés I** | A1 | Sustantivos contables e incontables, cuantificadores (*There is / There are*), profesiones y vocabulario base. | *Juego de Vocabulario* (`/juego-vocabulario`) | Extracción dinámica vía FastAPI desde **Datamuse API** + **MyMemory API** con caché en PostgreSQL[cite: 2, 9]. |
+| **Inglés II** | A2 | Verbos regulares e irregulares en pasado simple, contraste *Present Simple vs. Present Continuous* y medios de transporte. | *Verb Transformer* (`/verb-transformer`) | Banco curricular estructurado validado contra lista de verbos irregulares del programa Inglés II[cite: 8]. |
+| **Inglés III** | B1 | Colocaciones léxicas (*Make / Do / Give*), expresión de consejos y predicciones futuras (*Will / Might*). | *The 3 Buttons* (`/the-3-buttons`) | Matriz de colocaciones extraída de las unidades léxicas oficiales de Inglés III[cite: 7, 8]. |
+| **Inglés IV** | B1+ | Transformación de voz activa a voz pasiva (*Present/Past Passive*), primer condicional y vocabulario avanzado. | *Passive Selector* (`/passive-selector`) | Banco de estructuras sintácticas basado en los resultados de aprendizaje de Inglés IV[cite: 7, 8]. |
+
+##### 2. Proceso de Validación Pedagógica y Técnica
+Para asegurar que los contenidos cargados en la plataforma sean fieles al currículo universitario y lingüísticamente correctos, se aplica un protocolo de validación en tres etapas:
+1. **Mapeo Curricular por Resultados de Aprendizaje:** Cada juego y banco de preguntas se vincula explícitamente a un identificador de nivel (`ING-I` a `ING-IV`) y categoría temática en la tabla `JUEGO` de PostgreSQL, verificando que ninguna actividad evalúe tiempos verbales o estructuras no cubiertas en el programa de la asignatura correspondiente[cite: 2, 8].
+2. **Validación Lexicográfica y Estructural Automatizada:** Para el vocabulario obtenido dinámicamente desde fuentes externas (Datamuse/MyMemory), el microservicio en Python aplica validación de esquema mediante **Pydantic** (`DefinicionLimpia`), filtrado de caracteres no alfabéticos (`^[a-zA-Z]+$`), verificación de categoría gramatical y deduplicación conceptual antes de persistir el registro en PostgreSQL[cite: 2, 14].
+3. **Revisión Cruzada y Prueba Piloto:** Los enunciados, distractores y retroalimentaciones explicativas de los juegos estáticos y dinámicos son revisados por los integrantes del equipo que cursaron los cuatro niveles de inglés en la PUCV, contrastándolos con las pautas de evaluación formativa de la universidad para evitar ambigüedades gramaticales[cite: 2].
+
+#### Especificación Formal del Mecanismo Adaptativo (Variables, Reglas y Resultados Verificables)
+
+Para superar un enfoque meramente estático o CRUD[cite: 3], **Miracle** implementa un **motor adaptativo basado en reglas determinísticas e historial de desempeño**, ejecutado por el microservicio especializado en Python (FastAPI) a partir de las métricas persistidas por NestJS en la tabla `INTERACCION_ESTUDIANTE` (`puntaje`, `errores_comunes`, `fecha`)[cite: 2, 3].
+
+##### 1. Variables de Entrada del Modelo ($V$)
+Cada vez que un estudiante completa una ronda o responde ítems dentro de un módulo (`JUEGO`), el sistema evalúa el siguiente vector de estado del estudiante $S_u$:
+
+| Variable | Tipo | Fuente / Cálculo | Descripción |
+| :--- | :---: | :--- | :--- |
+| `errores_categoria` ($E_c$) | `int` | `INTERACCION_ESTUDIANTE.errores_comunes` | Cantidad acumulada de respuestas incorrectas en una categoría gramatical o léxica específica (ej. *Past Passive*, colocación *MAKE*, vocabulario A1)[cite: 2]. |
+| `tasa_acierto_reciente` ($T_a$) | `float` $[0, 1]$ | $\frac{\text{aciertos últimos } N \text{ intentos}}{N}$ ($N=5$) | Rendimiento porcentual en la ventana móvil de las últimas 5 interacciones del estudiante en el curso activo. |
+| `tiempo_respuesta_prom` ($t_r$) | `float` (seg) | Timestamp inicio vs. respuesta en Frontend | Velocidad media de resolución por ejercicio, utilizada para distinguir dominio fluido de resolución por ensayo y error. |
+| `racha_aciertos` ($R_a$) | `int` | Contador de sesión activa | Número de respuestas correctas consecutivas sin fallos ni agotamiento de temporizador. |
+
+##### 2. Reglas de Decisión del Motor Adaptativo ($R$)
+El microservicio Python evalúa las variables de entrada mediante un conjunto ordenado de reglas de producción:
+
+* **Regla $R_1$ — Activación de Modo Refuerzo Focalizado (Brecha de Conocimiento):**
+  $$\text{SI } (E_c \ge 3) \;\lor\; (T_a < 0.60) \implies \text{Estado} = \texttt{REFUERZO\_FOCALIZADO}$$
+  * **Acción:** El motor repondera la selección de la siguiente ronda asignando una probabilidad del **70%** a ítems pertenecientes a la categoría con mayor `errores_categoria` (en lugar de selección uniforme aleatoria) y habilita pistas pedagógicas contextuales (definición traducida, fonética o regla gramatical explícita) tras cada intento[cite: 2, 7].
+
+* **Regla $R_2$ — Escalamiento de Dificultad (Dominio Consolidado):**
+  $$\text{SI } (R_a \ge 5) \;\land\; (T_a \ge 0.85) \;\land\; (t_r < 5.0\text{s}) \implies \text{Estado} = \texttt{DESAFIO\_AVANZADO}$$
+  * **Acción:** El sistema incrementa la complejidad cognitiva de la actividad: reduce el temporizador por pregunta en un **25%** (ej. de 15s a 11s), prioriza distractores morfológicamente cercanos o transita de selección múltiple a escritura libre (*Verb Transformer*)[cite: 2, 7].
+
+* **Regla $R_3$ — Progresión Estándar (Equilibrio):**
+  $$\text{SI } (0.60 \le T_a < 0.85) \;\land\; (E_c < 3) \implies \text{Estado} = \texttt{ESTANDAR}$$
+  * **Acción:** Mantiene el muestreo aleatorio sin repetición ("bolsa de pendientes") sobre el catálogo del curso correspondiente[cite: 7].
+
+##### 3. Resultados Verificables y Trazabilidad ($Y$)
+La adaptación no es opaca ni meramente declarativa[cite: 3]; produce evidencias observables tanto en la interfaz del estudiante como en los registros del sistema:
+1. **Explicabilidad en la Interfaz (Transparencia):** Cuando se activa $R_1$ o $R_2$, el payload JSON retornado por NestJS incluye el objeto `adaptacion: { modo, categoria_priorizada, motivo }`. La vista del juego despliega un indicador explícito al estudiante (ej. *"Modo Refuerzo activado: practicando colocaciones con MAKE tras detectar 3 errores recientes"*), permitiéndole comprender por qué cambiaron los ejercicios[cite: 3].
+2. **Control del Usuario:** El estudiante conserva la autonomía para aceptar la recomendación de refuerzo o reiniciar el modo estándar desde el menú del curso[cite: 3].
+3. **Verificación Cuantitativa en Base de Datos:** Cada sesión adaptativa queda registrada con marca de tiempo (`fecha`) en `INTERACCION_ESTUDIANTE`, permitiendo comparar el `puntaje` y la reducción de `errores_comunes` antes y después de la intervención adaptativa[cite: 2, 3].
 
 ## Integración del Servicio Python (EP2 - Punto 4)
 

@@ -62,16 +62,16 @@ export class HeaderComponent implements OnInit {
   }
 
   verificarRolUsuario() {
-    const usuarioString = localStorage.getItem('user') || localStorage.getItem('usuario');
+    const usuarioString = localStorage.getItem('miracle_user') || localStorage.getItem('user');
     if (usuarioString) {
       try {
         const user = JSON.parse(usuarioString);
-        this.isUserAdmin = user.rol === 'ADMIN' || user.role === 'ADMIN';
-      } catch (e) {
+        this.isUserAdmin = user.rol === 'ADMIN';
+      } catch {
         this.isUserAdmin = false;
       }
     } else {
-      this.isUserAdmin = localStorage.getItem('user_role') === 'ADMIN';
+      this.isUserAdmin = false;
     }
   }
 
@@ -103,10 +103,9 @@ export class HeaderComponent implements OnInit {
 
   cerrarSesion() {
     this.showAccountMenu = false;
+    localStorage.removeItem('miracle_token');
+    localStorage.removeItem('miracle_user');
     localStorage.removeItem('miracle_admin_mode');
-    localStorage.removeItem('user');
-    localStorage.removeItem('usuario');
-    localStorage.removeItem('user_role');
     this.router.navigate(['/login']);
   }
 }
