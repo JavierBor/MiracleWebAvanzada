@@ -1,7 +1,13 @@
-import { Injectable, GatewayTimeoutException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  GatewayTimeoutException,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { firstValueFrom, catchError, timeout } from 'rxjs';
+import { CreateForoDto } from './foro.dto.js';
 
 @Injectable()
 export class ForoService {
@@ -15,80 +21,74 @@ export class ForoService {
   }
 
   async buscarPublicacionesInteligente(query: string) {
-    // 1. Obtener el corpus desde PostgreSQL
     const publicaciones = await this.prisma.publicacionForo.findMany({
-      select: { id: true, contenido: true }
+      where: { estado: 'ACTIVA' },
+      select: { id: true, contenido: true, fecha_creacion: true },
     });
 
-    // 2. Darle el formato que espera FastAPI (models.py)
-    const documents = publicaciones.map(pub => ({
+    const documents = publicaciones.map((pub) => ({
       id: pub.id,
-      content: pub.contenido
+      content: pub.contenido,
     }));
 
     try {
-      // 3. Mecanismo de consulta con Timeout de 5 segundos
       const response = await firstValueFrom(
         this.httpService.post(`${this.pythonUrl}/api/foro/buscar`, { query, documents }).pipe(
-          timeout(5000), 
+          timeout(5000),
           catchError(() => {
             throw new GatewayTimeoutException('El motor de búsqueda (Python) no responde a tiempo.');
-          })
-        )
+          }),
+        ),
       );
 
       const searchResult = response.data;
 
-      // 4. Cruzar resultados de Python con los datos reales de la BD
       const resultadosEnriquecidos = searchResult.results.map((resultadoPython: any) => {
         const pubOriginal = publicaciones.find((p: any) => p.id === resultadoPython.id);
         return {
           ...pubOriginal,
-          score_relevancia: resultadoPython.score
+          score_relevancia: resultadoPython.score,
         };
       });
 
-      // 5. Retornar resultados listos para Angular con metadatos
       return {
         metadatos_busqueda: {
           tiempo_procesamiento_ms: searchResult.processing_time_ms,
-          total_encontrados: searchResult.results.length
+          total_encontrados: searchResult.results.length,
         },
-        resultados: resultadosEnriquecidos
+        resultados: resultadosEnriquecidos,
       };
-
     } catch (error: any) {
-      console.error('Error en búsqueda inteligente:', error.message);
       if (error instanceof GatewayTimeoutException) throw error;
       throw new InternalServerErrorException('Error procesando la búsqueda en el foro.');
     }
   }
 
-  async crearPublicacionDb(datos: any) {
-    const contenidoCompleto = `[${datos.curso}] ${datos.titulo} - ${datos.contenido}`;
+  async crearPublicacionDb(usuarioId: string, datos: CreateForoDto) {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: { id: true, estado: true },
+    });
 
-    // 1. Buscar dinámicamente el primer usuario que exista en PostgreSQL (Staging o Local)
-    const usuarioExistente = await this.prisma.usuario.findFirst();
-
-    if (!usuarioExistente) {
-      throw new InternalServerErrorException(
-        'No hay usuarios registrados en la base de datos para vincular la publicación.'
-      );
+    if (!usuario) {
+      throw new NotFoundException('El usuario autenticado no existe en la base de datos.');
     }
 
-    // 2. Insertar la publicación asignando el usuarioId real
+    const contenidoCompleto = `[${datos.curso.trim()}] ${datos.titulo.trim()} - ${datos.contenido.trim()}`;
+
     return await this.prisma.publicacionForo.create({
       data: {
         contenido: contenidoCompleto,
         estado: 'ACTIVA',
-        usuarioId: usuarioExistente.id
-      }
+        usuarioId: usuario.id,
+      },
     });
   }
 
   async obtenerTodasLasPublicaciones() {
     return await this.prisma.publicacionForo.findMany({
-      orderBy: { id: 'desc' }
+      where: { estado: 'ACTIVA' },
+      orderBy: { fecha_creacion: 'desc' },
     });
   }
 }
