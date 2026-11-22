@@ -1,0 +1,17 @@
+{
+  "name": "Miracle — Plataforma Adaptativa de Inglés",
+  "short_name": "Miracle",
+  "theme_color": "#8b008b",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
