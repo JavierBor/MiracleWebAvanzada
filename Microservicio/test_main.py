@@ -1,20 +1,39 @@
-
 from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
-from main import app
+from main import app, INTERNAL_API_KEY
 from services import DefinicionLimpia
 
 
 # Instanciamos el cliente de pruebas de FastAPI
 client = TestClient(app)
+INTERNAL_HEADERS = {"X-Internal-Api-Key": INTERNAL_API_KEY}
 
 
 # --- 1. PRUEBA DE SALUD ---
 def test_health_check():
-    """Prueba el endpoint de salud del sistema."""
+    """Prueba el endpoint de salud del sistema (público para Docker/Render)."""
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "service": "python-microservice"}
+    assert "X-Request-Id" in response.headers
+
+
+# --- 1.5. PRUEBAS DE SEGURIDAD INTERNA (X-Internal-Api-Key) ---
+def test_rechaza_peticion_sin_api_key():
+    """Verifica que los endpoints internos rechacen peticiones sin X-Internal-Api-Key."""
+    response = client.get("/api/vocabulario/student")
+    assert response.status_code == 403
+    assert "X-Internal-Api-Key" in response.json()["detail"]
+
+
+def test_rechaza_peticion_con_api_key_invalida():
+    """Verifica que los endpoints internos rechacen una clave interna incorrecta."""
+    response = client.post(
+        "/api/adaptativo/siguiente-verbo",
+        json={"racha_actual": 0},
+        headers={"X-Internal-Api-Key": "clave_incorrecta"},
+    )
+    assert response.status_code == 403
 
 
 # --- 2. PRUEBAS DE VOCABULARIO Y DICCIONARIO ---
@@ -34,7 +53,7 @@ def test_consultar_palabra_valida(mock_obtener):
         ejemplo=None,
         sinonimos=[]
     )
-    response = client.get("/api/vocabulario/student")
+    response = client.get("/api/vocabulario/student", headers=INTERNAL_HEADERS)
     assert response.status_code == 200
     data = response.json()
 
@@ -50,7 +69,7 @@ def test_consultar_palabra_invalida():
     Prueba con datos inválidos y validación:
     Verifica que enviar números o símbolos arroje un error 422 (Unprocessable Entity).
     """
-    response = client.get("/api/vocabulario/student123")
+    response = client.get("/api/vocabulario/student123", headers=INTERNAL_HEADERS)
     assert response.status_code == 422
     data = response.json()
     assert "detail" in data
@@ -63,7 +82,7 @@ def test_consultar_palabra_no_encontrada(mock_obtener):
     Verifica que buscar una palabra que no existe en el diccionario devuelva 404.
     """
     mock_obtener.return_value = None
-    response = client.get("/api/vocabulario/zxqwy")
+    response = client.get("/api/vocabulario/zxqwy", headers=INTERNAL_HEADERS)
     assert response.status_code == 404
     data = response.json()
     assert "detail" in data
@@ -80,7 +99,7 @@ def test_buscar_foro_exito():
             {"id": 3, "content": "Repaso de vocabulario en ingles para la prueba"}
         ]
     }
-    response = client.post("/api/foro/buscar", json=payload)
+    response = client.post("/api/foro/buscar", json=payload, headers=INTERNAL_HEADERS)
     assert response.status_code == 200
     data = response.json()
     assert data["query"] == "examen ingles"
@@ -98,7 +117,7 @@ def test_buscar_foro_corpus_vacio():
         "query": "examen",
         "documents": []
     }
-    response = client.post("/api/foro/buscar", json=payload)
+    response = client.post("/api/foro/buscar", json=payload, headers=INTERNAL_HEADERS)
     assert response.status_code == 200
     data = response.json()
     assert data["results"] == []
@@ -113,7 +132,7 @@ def test_buscar_foro_stopwords():
             {"id": 1, "content": "This is a simple post"}
         ]
     }
-    response = client.post("/api/foro/buscar", json=payload)
+    response = client.post("/api/foro/buscar", json=payload, headers=INTERNAL_HEADERS)
     assert response.status_code == 200
     assert response.json()["results"] == []
 
@@ -128,7 +147,7 @@ def test_evaluar_foro_exito():
         {"id": 4, "content": "Lista de palabras sobre vocabulario ingles"},
         {"id": 5, "content": "Ejercicio de pronunciacion y vocabulario ingles"}
     ]
-    response = client.post("/api/foro/evaluar", json=sample_docs)
+    response = client.post("/api/foro/evaluar", json=sample_docs, headers=INTERNAL_HEADERS)
     assert response.status_code == 200
     data = response.json()
     assert data["metric"] == "Precision@3"
@@ -140,7 +159,7 @@ def test_evaluar_foro_exito():
 
 def test_evaluar_foro_sin_documentos():
     """Verifica que la evaluación con lista vacía retorne métricas en cero sin colapsar."""
-    response = client.post("/api/foro/evaluar", json=[])
+    response = client.post("/api/foro/evaluar", json=[], headers=INTERNAL_HEADERS)
     assert response.status_code == 200
     data = response.json()
     assert data["average_precision"] == 0.0
@@ -160,7 +179,8 @@ def test_adaptativo_nivel_normal_inicial(mock_diccionario):
     )
     response = client.post(
         "/api/adaptativo/siguiente-verbo",
-        json={"racha_actual": 0, "verbos_usados": []}
+        json={"racha_actual": 0, "verbos_usados": []},
+        headers=INTERNAL_HEADERS,
     )
     assert response.status_code == 200
     data = response.json()
@@ -179,11 +199,19 @@ def test_adaptativo_sube_a_dificil_y_experto(mock_diccionario):
         categoria_gramatical="verbo",
         definicion="Ir.",
     )
-    res_dificil = client.post("/api/adaptativo/siguiente-verbo", json={"racha_actual": 5})
+    res_dificil = client.post(
+        "/api/adaptativo/siguiente-verbo",
+        json={"racha_actual": 5},
+        headers=INTERNAL_HEADERS,
+    )
     assert res_dificil.status_code == 200
     assert res_dificil.json()["nivel_activo"] == "Difícil"
 
-    res_experto = client.post("/api/adaptativo/siguiente-verbo", json={"racha_actual": 10})
+    res_experto = client.post(
+        "/api/adaptativo/siguiente-verbo",
+        json={"racha_actual": 10},
+        headers=INTERNAL_HEADERS,
+    )
     assert res_experto.status_code == 200
     assert res_experto.json()["nivel_activo"] == "Experto"
 
@@ -200,7 +228,8 @@ def test_adaptativo_reinicia_tras_error(mock_diccionario):
     )
     response = client.post(
         "/api/adaptativo/siguiente-verbo",
-        json={"racha_actual": 8, "ultimo_resultado": False}
+        json={"racha_actual": 8, "ultimo_resultado": False},
+        headers=INTERNAL_HEADERS,
     )
     assert response.status_code == 200
     assert response.json()["nivel_activo"] == "Normal"
@@ -218,7 +247,8 @@ def test_adaptativo_control_manual_usuario(mock_diccionario):
     )
     response = client.post(
         "/api/adaptativo/siguiente-verbo",
-        json={"racha_actual": 0, "modo_manual": True, "dificultad_fija": "Experto"}
+        json={"racha_actual": 0, "modo_manual": True, "dificultad_fija": "Experto"},
+        headers=INTERNAL_HEADERS,
     )
     assert response.status_code == 200
     data = response.json()

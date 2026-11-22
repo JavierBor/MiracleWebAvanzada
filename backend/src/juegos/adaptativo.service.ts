@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RegistrarInteraccionDto, SiguienteVerboDto } from './adaptativo.dto.js';
 
@@ -22,9 +23,14 @@ export class AdaptativoService {
     return process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
   }
 
+  private get internalApiKey(): string {
+    return process.env.INTERNAL_API_KEY || 'miracle_internal_secret_2026';
+  }
+
   constructor(private readonly prisma: PrismaService) {}
 
-  async obtenerSiguienteVerbo(dto: SiguienteVerboDto): Promise<RespuestaAdaptativa> {
+  async obtenerSiguienteVerbo(dto: SiguienteVerboDto, requestId?: string): Promise<RespuestaAdaptativa> {
+    const correlationId = requestId || randomUUID();
     const url = `${this.pythonUrl}/api/adaptativo/siguiente-verbo`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -35,6 +41,8 @@ export class AdaptativoService {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
+          'X-Internal-Api-Key': this.internalApiKey,
+          'X-Request-Id': correlationId,
         },
         body: JSON.stringify({
           racha_actual: dto.rachaActual,
@@ -63,7 +71,7 @@ export class AdaptativoService {
     } catch (error: any) {
       clearTimeout(timeoutId);
       this.logger.warn(
-        `[Degradación Controlada] FastAPI no disponible (${error.message}). Usando respaldo local en NestJS.`,
+        `[REQ:${correlationId}] [Degradación Controlada] FastAPI no disponible (${error.message}). Usando respaldo local en NestJS.`,
       );
       return this.generarFallbackLocal(dto);
     }

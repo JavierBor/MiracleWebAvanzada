@@ -3,14 +3,18 @@ import {
   GatewayTimeoutException,
   InternalServerErrorException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { firstValueFrom, catchError, timeout } from 'rxjs';
 import { CreateForoDto } from './foro.dto.js';
 
 @Injectable()
 export class ForoService {
+  private readonly logger = new Logger(ForoService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly httpService: HttpService,
@@ -20,7 +24,13 @@ export class ForoService {
     return process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
   }
 
-  async buscarPublicacionesInteligente(query: string) {
+  private get internalApiKey(): string {
+    return process.env.INTERNAL_API_KEY || 'miracle_internal_secret_2026';
+  }
+
+  async buscarPublicacionesInteligente(query: string, requestId?: string) {
+    const correlationId = requestId || randomUUID();
+
     const publicaciones = await this.prisma.publicacionForo.findMany({
       where: { estado: 'ACTIVA' },
       select: { id: true, contenido: true, fecha_creacion: true },
@@ -33,12 +43,25 @@ export class ForoService {
 
     try {
       const response = await firstValueFrom(
-        this.httpService.post(`${this.pythonUrl}/api/foro/buscar`, { query, documents }).pipe(
-          timeout(5000),
-          catchError(() => {
-            throw new GatewayTimeoutException('El motor de búsqueda (Python) no responde a tiempo.');
-          }),
-        ),
+        this.httpService
+          .post(
+            `${this.pythonUrl}/api/foro/buscar`,
+            { query, documents },
+            {
+              headers: {
+                'X-Internal-Api-Key': this.internalApiKey,
+                'X-Request-Id': correlationId,
+              },
+            },
+          )
+          .pipe(
+            timeout(5000),
+            catchError(() => {
+              throw new GatewayTimeoutException(
+                'El motor de búsqueda (Python) no responde a tiempo.',
+              );
+            }),
+          ),
       );
 
       const searchResult = response.data;
@@ -59,6 +82,7 @@ export class ForoService {
         resultados: resultadosEnriquecidos,
       };
     } catch (error: any) {
+      this.logger.error(`[REQ:${correlationId}] Error en búsqueda inteligente: ${error.message}`);
       if (error instanceof GatewayTimeoutException) throw error;
       throw new InternalServerErrorException('Error procesando la búsqueda en el foro.');
     }

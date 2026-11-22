@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { AppService } from './app.service.js';
 
 @Controller()
@@ -11,7 +11,7 @@ export class AppController {
   }
 
   @Get('health')
-  getHealth() {
-    return { status: 'ok', service: 'nestjs-backend' };
+  async getHealth(@Req() req: any) {
+    return await this.appService.checkDeepHealth(req.requestId);
   }
 }

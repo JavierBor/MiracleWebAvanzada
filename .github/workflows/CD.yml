@@ -1,0 +1,41 @@
+name: CD Staging
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches: [ main ]
+
+jobs:
+  deploy-staging:
+    name: Despliegue Continuo a Staging (CD)
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Publicar / Desplegar en Ambiente de Staging
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK_URL" ]; then
+            curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL"
+            echo "Despliegue en Staging activado exitosamente."
+          else
+            echo "Pendiente vincular URL de Webhook en GitHub Secrets."
+            exit 1
+          fi
+
+      - name: Esperar arranque de servicios en Staging
+        run: sleep 45
+
+      - name: Quality Gate - Verificar Healthcheck Profundo en Staging
+        env:
+          STAGING_URL: ${{ vars.STAGING_URL }}
+        run: |
+          if [ -n "$STAGING_URL" ]; then
+            echo "Consultando ${STAGING_URL}/health ..."
+            curl --fail --retry 5 --retry-delay 15 --retry-all-errors "${STAGING_URL}/health"
+          else
+            echo "STAGING_URL no definida en GitHub Variables; omitiendo verificación remota."
+          fi

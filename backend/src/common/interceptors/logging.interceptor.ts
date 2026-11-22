@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -18,11 +19,15 @@ export class LoggingInterceptor implements NestInterceptor {
     const res = context.switchToHttp().getResponse();
     const { method, url } = req;
 
+    const requestId = (req.headers['x-request-id'] as string) || randomUUID();
+    req.requestId = requestId;
+    res.setHeader('X-Request-Id', requestId);
+
     return next.handle().pipe(
       tap(() => {
         const delay = Date.now() - now;
         res.setHeader('X-Response-Time', `${delay}ms`);
-        this.logger.log(`${method} ${url} - ${res.statusCode} - ${delay}ms`);
+        this.logger.log(`[${requestId}] ${method} ${url} - ${res.statusCode} - ${delay}ms`);
       }),
     );
   }

@@ -49,6 +49,37 @@ Para enriquecer la experiencia de aprendizaje, el sistema consumirá informació
 
 La aplicación analizará el desempeño continuo del estudiante para personalizar su aprendizaje. A través del servicio en Python, el sistema evaluará los resultados de los juegos interactivos. Si detecta un patrón de errores frecuentes en un área particular (por ejemplo, dificultad con ciertos tiempos verbales en una unidad), el mecanismo adaptativo priorizará y generará automáticamente ejercicios de refuerzo enfocados en esos errores específicos, evitando que el alumno avance con vacíos de conocimiento.
 
+## Arquitectura de Resiliencia, Seguridad Interna y Motor Adaptativo (DDA)
+
+### 1. Flujo del Motor Adaptativo (Dynamic Difficulty Adjustment)
+La plataforma ajusta dinámicamente la dificultad de los ejercicios de conjugación verbal (`VerbTransformerComponent`) en función del desempeño del estudiante:
+
+```
+Angular (Frontend) 
+  └─ POST /juegos/adaptativo/siguiente (JWT Bearer)
+       └─ NestJS (AdaptativoService) [timeout: 5000ms | X-Request-Id | X-Internal-Api-Key]
+            ├─▶ FastAPI (Microservicio Python)
+            │     ├─ Evalúa racha actual (streak) y último resultado
+            │     ├─ Gradúa nivel: Normal (0–4) → Difícil (5–9) → Experto (≥10)
+            │     └─ Enriquece pista y fonética con Datamuse API + MyMemory API
+            └─▶ Degradación Controlada (Fallback Local en NestJS)
+                  └─ Si FastAPI excede 5s o cae, NestJS responde con banco local sin interrumpir al estudiante
+```
+
+* **Persistencia y Caché:** Los verbos enriquecidos desde APIs externas se almacenan en la tabla `Vocabulario` de PostgreSQL (`upsert`), y las métricas de progreso (puntaje, racha máxima, errores frecuentes) se registran por usuario en `InteraccionEstudiante`.
+
+### 2. Controles de Seguridad, Observabilidad y Control de Tráfico
+* **Autenticación y Autorización (RBAC):** Rutas protegidas mediante `JwtAuthGuard` y `RolesGuard` (`ESTUDIANTE`, `ADMIN`), vinculando las publicaciones del foro al ID real del usuario extraído del token (`req.user.sub`).
+* **Rate Limiting Global (`RateLimitGuard`):** Protección contra abuso de API (`100 req/min` por IP) y ataques de fuerza bruta en rutas `/auth/*` (`15 req/min`), exponiendo encabezados estándar `X-RateLimit-Limit`, `X-RateLimit-Remaining` y `Retry-After`.
+* **Seguridad Interna entre Servicios (`X-Internal-Api-Key`):** Los endpoints `/api/*` del microservicio FastAPI rechazan con `403 Forbidden` cualquier petición externa que no incluya la clave compartida con el backend NestJS.
+* **Manejo Uniforme de Errores (`AllExceptionsFilter`):** Filtro global de excepciones HTTP que estandariza las respuestas de error (`statusCode`, `timestamp`, `path`, `method`, `message`) sin filtrar trazas internas.
+* **Observabilidad y Trazabilidad Distribuida (`X-Request-Id`):** Cada petición HTTP recibe un UUID de correlación que se propaga desde NestJS hacia FastAPI y se registra en los logs de ambos contenedores, complementado con el endpoint de salud profundo `GET /health` (que verifica conectividad real con PostgreSQL vía `SELECT 1` y disponibilidad de `python_microservice`).
+
+### 3. Pipeline DevSecOps (CI / CD)
+El flujo de integración y despliegue continuo se divide en dos workflows independientes en `.github/workflows/`:
+* **Integración Continua (`CI.yml`):** Ejecuta *linting* (ESLint, Oxlint, Flake8), pruebas unitarias (Vitest y Pytest), análisis estático de seguridad (`Bandit`), auditoría de dependencias (`Safety`), detección de secretos (`TruffleHog`), pruebas de integración en Docker Compose, escaneo de contenedores con `Trivy` y validación de IaC (`Terraform fmt/validate/plan`).
+* **Despliegue Continuo (`CD.yml`):** Se dispara automáticamente tras un `CI` exitoso en `main`, activa el *Deploy Hook* en Render y ejecuta un *Quality Gate* verificando el estado `200 OK` de `/health` en Staging.
+
 ## 7. Instrucciones de Instalación y Ejecución
 
 El proyecto está contenerizado para garantizar una fácil instalación y un entorno de desarrollo reproducible.
