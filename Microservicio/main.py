@@ -41,7 +41,11 @@ async def add_process_time_and_request_id(request: Request, call_next):
     process_time = (time.time() - start_time) * 1000  # En milisegundos
     response.headers["X-Response-Time"] = f"{process_time:.2f}ms"
     response.headers["X-Request-Id"] = request_id
-    print(f"[REQ:{request_id}] [LATENCIA] {request.method} {request.url.path} -> {response.status_code} ({process_time:.2f}ms)")
+    print(
+        f"[REQ:{request_id}] [LATENCIA] "
+        f"{request.method} {request.url.path} -> "
+        f"{response.status_code} ({process_time:.2f}ms)"
+    )
     return response
 
 
